@@ -33,13 +33,18 @@ int main(int argc, char *argv[]) {
     int a = atoi(argv[1]);
     int b = atoi(argv[2]);
     
+    if (a > b){
+        printf("Wrong number order\n");
+        return 0;
+    }
+    
     srand(time(NULL));
     
     int size = 10;
     int arr[size];
     printf("Massive before changes: ");
     for (int i = 0; i < size; i++) {
-        arr[i] = a + rand() % b;
+        arr[i] = a + rand() % (b - a + 1);
         printf("%d ", arr[i]);
     }
     
