@@ -21,7 +21,7 @@ void find_and_swap_min_max(int arr[], int size) {
         }
     }
     
-    swap(&arr[minIndex], &arr[maxIndex]);
+    swap(arr + minIndex, arr +maxIndex);
 }
 
 int main(int argc, char *argv[]) {
@@ -35,12 +35,12 @@ int main(int argc, char *argv[]) {
     
     if (a > b){
         printf("Wrong number order\n");
-        return 0;
+        return 1;
     }
-    
+
     srand(time(NULL));
     
-    int size = 10;
+    const int size = 10;
     int arr[size];
     printf("Massive before changes: ");
     for (int i = 0; i < size; i++) {
