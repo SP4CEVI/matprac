@@ -57,6 +57,7 @@ int main() {
 
     if (!(base >= 2 && base <= 36)){
         printf("Wrong number\n");
+        return 1;
     }
 
     printf("Enter the numbers in the number system with the base %d (to complete, enter \"Stop\"): \n", base);
@@ -74,6 +75,11 @@ int main() {
         if (absValue > abs(maxValue)) {
             maxValue = value;
         }
+    }
+
+    if (!(maxNumber[0])){
+        printf("No entered values \n");
+        return 1;
     }
     
     printf("The maximum number modulo: %d\n", maxValue);
