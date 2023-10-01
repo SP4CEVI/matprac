@@ -3,23 +3,22 @@
 #include <math.h>
 
 
-unsigned long long fact(int k, int n) {
+unsigned long long fact(int n) {
     if (n == 0) {
         return 1;
     } else {
-        return (k * n) * fact(k, n - 1);
+        return (n) * fact(n - 1);
     }
 }
 
 
-double sum_a(double x, double epsilon) {
-    double sum = 1.0;
-    double current_value = 1.0;
+double sum_a(long double x, long double epsilon) {
+    long double sum = 1.0;
+    long double current_value = 1.0;
     int n = 1;
 
     while (fabs(current_value) > epsilon) {
-        //printf("%d\n", fact(1, n));
-        current_value = pow(x, n) / fact(1, n);
+        current_value = pow(x, n) / fact(n);
         sum += current_value;
         n++;
     }
@@ -28,14 +27,13 @@ double sum_a(double x, double epsilon) {
 }
 
 
-double sum_b(double x, double epsilon) {
-    double sum = 1.0;
-    double current_value = 1.0;
+long double sum_b(long double x, long double epsilon) {
+    long double sum = 1.0;
+    long double current_value = 1.0;
     int n = 1;
 
     while (n < 20) {
-        current_value = pow(-1, n) * pow(x, 2 * n) / fact(2, n);
-        //printf("%d\n", fact(2, n));
+        current_value = pow(-1, n) * pow(x, 2 * n) / fact(2 * n);
         if (fabs(current_value) < epsilon){
             return sum;
         }
@@ -47,13 +45,13 @@ double sum_b(double x, double epsilon) {
 }
 
 
-double sum_c(double x, double epsilon) {
-    double sum = 1.0;
-    double current_value = 1.0;
+long double sum_c(long double x, long double epsilon) {
+    long double sum = 1.0;
+    long double current_value = 1.0;
     int n = 1;
 
     while (n < 20) {
-        current_value = pow(3, 3 * n) * fact(1, n) * pow(x, 2 * n) / fact(3, n);
+        current_value = pow(3, 3 * n) * pow(fact(n), 3) * pow(x, 2 * n) / fact(3 * n);
         if (fabs(current_value) < epsilon){
             return sum;
         }
@@ -65,14 +63,13 @@ double sum_c(double x, double epsilon) {
 }
 
 
-double sum_d(double x, double epsilon) {
-    double sum = 1.0;
-    double current_value = 1.0;
+long double sum_d(long double x, long double epsilon) {
+    long double sum = 1.0;
+    long double current_value = 1.0;
     int n = 1;
 
     while (n < 20) {
-        current_value = pow(-1, n) * fact(1, fact(1, 2 * n - 1)) * pow(x, 2 * n) / fact(1, fact(2, n));
-        printf("%d\n", fact(1, fact(2, n)));
+        current_value = pow(-1, n) * fact(fact(2 * n - 1)) * pow(x, 2 * n) / fact(fact(2 * n));
         if (fabs(current_value) < epsilon){
             return sum;
         }
@@ -90,11 +87,11 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    double x = 0.0;
-    double epsilon = atof(argv[1]);
+    double x = 3.0;
+    long double epsilon = atof(argv[1]);
 
-    printf("Enter mean of x: ");
-    scanf("%lf", &x);
+    /*printf("Enter mean of x: ");
+    scanf("%lf", &x);*/
 
     double result_1 = sum_a(x, epsilon);
     double result_2 = sum_b(x, epsilon);
