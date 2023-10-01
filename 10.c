@@ -14,7 +14,12 @@ int base_to_10(char number[], int base){
     }
 
     while (*ptr){
-        res = res * base + (isdigit(*ptr) ? *ptr - '0': *ptr - 'A' + 10);
+        if (isdigit(*ptr)) {
+            res = res * base + (*ptr - '0');
+        } 
+        else {
+            res = res * base + (*ptr - 'A' + 10);
+        }
         ptr++;
     }
     return res;
@@ -26,10 +31,15 @@ char* ten_to_base(int number, int base){
     int res;
     char *ptr = buf + MAX_LENGTH - 1;
     *ptr = '\0';
-    
+
     while (number > 0){
         res = number % base;
-        *--ptr = (res > 9) ? res - 10 + 'A' : res + '0';
+        if (res > 9) {
+            *--ptr = res - 10 + 'A';
+        } 
+        else {
+            *--ptr = res + '0';
+        }
         number /= base;
     }
     return ptr;
