@@ -20,7 +20,9 @@ int find_closest(int num, int arr[], int size) {
 
 int* generate_array(int size, int minValue, int maxValue) {
     int* arr = (int*)malloc(size * sizeof(int));
-    
+    if (arr == NULL) {
+        return NULL;
+    }
     for (int i = 0; i < size; i++) {
         arr[i] = minValue + rand() % (maxValue - minValue + 1);
     }
@@ -29,7 +31,7 @@ int* generate_array(int size, int minValue, int maxValue) {
 }
 
 int* apply_operation(int arrA[], int arrB[], int size) {
-    int* arrC = (int*)malloc(size * sizeof(int));
+    int* arrC = arrA;
     
     for (int i = 0; i < size; i++) {
         int closest = find_closest(arrA[i], arrB, size);
@@ -67,7 +69,6 @@ int main() {
     
     free(arrA);
     free(arrB);
-    free(arrC);
     
     return 0;
 }
