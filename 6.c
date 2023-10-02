@@ -3,43 +3,55 @@
 #include <math.h>
 
 
-double integ_a(long double x, long double epsilon) {
-    long double res = 0.0;
-
-    for (x = epsilon; x <= 1.0; x += epsilon){
-        res += log(1 + x) / x * epsilon;
+double integ_a(double x){
+    if (x == 0.0){
+        return 1.0;
     }
-    return res;
+    return log(1 + x) / x;
+}
+
+double integ_b(double x) {
+    return exp(-pow(x, 2) / 2);
 }
 
 
-double integ_b(long double x, long double epsilon) {
-    long double res = 0.0;
-
-    for (x = epsilon; x <= 1.0; x += epsilon){
-        res += powl(expl(1), -powl(x, 2) / 2) * epsilon;
+double integ_c(double x) {
+    if (x <= 0.0 || x >= 1.0){
+        return 0.0;
     }
-    return res;
+    return log(1 / (1 - x));
 }
 
 
-double integ_c(long double x, long double epsilon) {
-    long double res = 0.0;
-
-    for (x = epsilon; x <= 1.0; x += epsilon){
-        res += log(1 / (1 - x)) * epsilon;
+double integ_d(double x) {
+    if (x <= 0.0){
+        return 0.0;
     }
-    return res;
+    return pow(x, x);
 }
 
 
-double integ_d(long double x, long double epsilon) {
-    long double res = 0.0;
+double trapezoidal(double a, double b, double epsilon, double (*func)(double)){
+    double h = (b - a);
+    double result = (func(a) + func(b)) / 2.0;
+    double integral = result * h;
+    double previous_integral = 0.0;
 
-    for (x = epsilon; x <= 1.0; x += epsilon){
-        res += powl(x, x) * epsilon;
+    while(fabs(integral - previous_integral) > epsilon){
+        previous_integral = integral;
+        result = 0.0;
+        h /= 2.0;
+        int num = (int)((b- a) / h);
+        for (int i = 1; i <= num; i++){
+            double x = a + i * h;
+            if (x > b){
+                x = b;
+            }
+            result += func(x);
+        }
+        integral = (integral / 2.0) + (result * h / 2.0);
     }
-    return res;
+    return integral;
 }
 
 
@@ -49,18 +61,19 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    double x = 2.0;
-    long double epsilon = atof(argv[1]);
+    double a = 0.0;
+    double b = 1.0;
+    double epsilon = atof(argv[1]);
 
-    double result_1 = integ_a(x, epsilon);
-    double result_2 = integ_b(x, epsilon);
-    double result_3 = integ_c(x, epsilon);
-    double result_4 = integ_d(x, epsilon);
+    double result_a = trapezoidal(a, b, epsilon, integ_a);
+    double result_b = trapezoidal(a, b, epsilon, integ_b);
+    double result_c = trapezoidal(a + epsilon, b - epsilon, epsilon, integ_c);
+    double result_d = trapezoidal(a, b, epsilon, integ_d);
 
-    printf("Integral 1: %lf\n", result_1);
-    printf("Integral 2: %lf\n", result_2);
-    printf("Integral 3: %lf\n", result_3);
-    printf("Integral 4: %lf\n", result_4);
+    printf("Integral 1: %lf\n", result_a);
+    printf("Integral 2: %lf\n", result_b);
+    printf("Integral 3: %lf\n", result_c);
+    printf("Integral 4: %lf\n", result_d);
     
 
     return 0;
