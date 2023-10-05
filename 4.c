@@ -130,7 +130,7 @@ int main(int argc, char* argv[]) {
                     out_name(argv[2], sd);
                     FILE* file_d = fopen(sd, "w");
                     if (file_d == NULL) {
-                        printf("Failed to open input file\n");
+                        printf("Failed to open output file\n");
                         return 1;
                     }
                     flag_d(input_file, file_d);
@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
                     }
                     FILE* file_nd = fopen(argv[3], "w");
                     if (file_nd == NULL) {
-                        printf("Failed to open input file\n");
+                        printf("Failed to open output file\n");
                         return 0;
                     }
                     flag_d(input_file, file_nd);
@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
                     out_name(argv[2], sd);
                     FILE* file_i = fopen(sd, "w");
                     if (file_i == NULL) {
-                        printf("Failed to open input file\n");
+                        printf("Failed to open output file\n");
                         return 0;
                     }
                     flag_i(input_file, file_i);
@@ -166,7 +166,7 @@ int main(int argc, char* argv[]) {
                     }
                     FILE* file_ni = fopen(argv[3], "w");
                     if (file_ni == NULL) {
-                        printf("Failed to open input file\n");
+                        printf("Failed to open output file\n");
                         return 0;
                     }
                     flag_i(input_file, file_ni);
@@ -176,7 +176,7 @@ int main(int argc, char* argv[]) {
                     out_name(argv[2], sd);
                     FILE* file_s = fopen(sd, "w");
                     if (file_s == NULL) {
-                        printf("Failed to open input file\n");
+                        printf("Failed to open output file\n");
                         return 0;
                     }
                     flag_s(input_file, file_s);
@@ -189,7 +189,7 @@ int main(int argc, char* argv[]) {
                     }
                     FILE* file_ns = fopen(argv[3], "w");
                     if (file_ns == NULL) {
-                        printf("Failed to open input file\n");
+                        printf("Failed to open output file\n");
                         return 0;
                     }
                     flag_s(input_file, file_ns);
@@ -199,7 +199,7 @@ int main(int argc, char* argv[]) {
                     out_name(argv[2], sd);
                     FILE* file_a = fopen(sd, "w");
                     if (file_a == NULL) {
-                        printf("Failed to open input file\n");
+                        printf("Failed to open output file\n");
                         return 0;
                     }
                     flag_a(input_file, file_a);
@@ -212,7 +212,7 @@ int main(int argc, char* argv[]) {
                     }
                     FILE* file_na = fopen(argv[3], "w");
                     if (file_na == NULL) {
-                        printf("Failed to open input file\n");
+                        printf("Failed to open output file\n");
                         return 0;
                     }
                     flag_a(input_file, file_na);
@@ -222,49 +222,5 @@ int main(int argc, char* argv[]) {
             fclose(input_file);
         }
     }
-/*    char* flag = argv[1];
-    char* input_file_path = argv[2];
-    char output_file_path[256];
-
-    FILE* input_file = fopen(input_file_path, "r");
-    if (input_file == NULL) {
-        printf("Failed to open input file\n");
-        return 0;
-    }
-
-    FILE* output_file;
-
-    if (flag[1] == 'd') {
-        if (argc < 4) {
-            printf("Missing output file path\n");
-            fclose(input_file);
-            return 0;
-        }
-        strcpy(output_file_path, argv[3]);
-        output_file = fopen(output_file_path, "w");
-        flag_d(input_file, output_file);
-    } else if (flag[1] == 'i') {
-        sprintf(output_file_path, "out_%s", input_file_path);
-        output_file = fopen(output_file_path, "w");
-        flag_i(input_file, output_file);
-    } else if (flag[1] == 's') {
-        sprintf(output_file_path, "out_%s", input_file_path);
-        output_file = fopen(output_file_path, "w");
-        flag_s(input_file, output_file);
-    } else if (flag[1] == 'a') {
-        sprintf(output_file_path, "out_%s", input_file_path);
-        output_file = fopen(output_file_path, "w");
-        flag_a(input_file, output_file);
-    } else {
-        printf("Invalid flag\n");
-        fclose(input_file);
-        return 0;
-    }
-
-    fclose(input_file);
-    fclose(output_file);
-
-    printf("Output file generated: %s\n", output_file_path);
-*/
     return 0;
 }
