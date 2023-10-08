@@ -78,8 +78,8 @@ int main() {
     }
 
     if (!(maxNumber[0])){
-        printf("No entered values \n");
-        return 1;
+        printf("Wrong number \n");
+        return 2;
     }
     
     printf("The maximum number modulo: %d\n", maxValue);
