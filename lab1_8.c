@@ -16,7 +16,7 @@ int base_to_10(char number[], int base){
     }
 
     while (*ptr){
-        if (isdigit(*ptr)) {
+        if (isdigit(*ptr)) { 
             res = res * base + (*ptr - '0');
         } 
         else {
