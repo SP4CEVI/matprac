@@ -35,7 +35,7 @@ int main(int argc, char *argv[]) {
     
     if (a > b){
         printf("Wrong number order\n");
-        return 1;
+        return 2;
     }
 
     srand(time(NULL));
