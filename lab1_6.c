@@ -32,7 +32,7 @@ double integ_d(double x) {
 
 
 double trapezoidal(double a, double b, double epsilon, double (*func)(double)){
-    double h = (b - a);
+    double h = b - a;
     double result = (func(a) + func(b)) / 2.0;
     double integral = result * h;
     double previous_integral = 0.0;
@@ -64,7 +64,10 @@ int main(int argc, char* argv[]) {
     double a = 0.0;
     double b = 1.0;
     double epsilon = atof(argv[1]);
-
+    if (epsilon <= 0.0){
+        printf("Wrong epsilon\n");
+        return 2;
+    }
     double result_a = trapezoidal(a, b, epsilon, integ_a);
     double result_b = trapezoidal(a, b, epsilon, integ_b);
     double result_c = trapezoidal(a + epsilon, b - epsilon, epsilon, integ_c);
