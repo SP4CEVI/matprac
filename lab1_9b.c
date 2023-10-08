@@ -55,8 +55,24 @@ int main() {
     
     int* arrA = generate_array(size, -1000, 1000);
     int* arrB = generate_array(size, -1000, 1000);
-    
+
+    if (arrA == NULL){
+        printf("Error of memory\n");
+        return 1;
+    }
+    if (arrB == NULL){
+        printf("Error of memory\n");
+        free(arrA);
+        return 2;
+    }
+
     int* arrC = apply_operation(arrA, arrB, size);
+     if (arrC == NULL){
+        printf("Error of memory\n");
+        free(arrA);
+        free(arrB);
+        return 3;
+    }
     
     printf("Array A: ");
     print_array(arrA, size);
@@ -69,6 +85,6 @@ int main() {
     
     free(arrA);
     free(arrB);
-    
+    free(arrC);
     return 0;
 }
