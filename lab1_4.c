@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
     for (int i = fl_d; i <= fl_na; i++){
         if (strcmp(argv[1], Names_of_commands[i]) == 0){
             FILE* input_file = fopen(argv[2], "r");
-            if (input_file == NULL) {
+            if (input_file == NULL) { 
                 printf("Failed to open input file\n");
                 return 1;
             }
@@ -135,7 +135,7 @@ int main(int argc, char* argv[]) {
                     }
                     flag_d(input_file, file_d);
                     fclose(file_d);
-                    break;
+                    return 0;
                 case fl_nd:
                     if (argc < 4){
                         printf("Missing output file path\n");
@@ -144,21 +144,21 @@ int main(int argc, char* argv[]) {
                     FILE* file_nd = fopen(argv[3], "w");
                     if (file_nd == NULL) {
                         printf("Failed to open output file\n");
-                        return 0;
+                        return 1;
                     }
                     flag_d(input_file, file_nd);
                     fclose(file_nd);
-                    break;
+                    return 0;
                 case fl_i:
                     out_name(argv[2], sd);
                     FILE* file_i = fopen(sd, "w");
                     if (file_i == NULL) {
                         printf("Failed to open output file\n");
-                        return 0;
+                        return 1;
                     }
                     flag_i(input_file, file_i);
                     fclose(file_i);
-                    break;
+                    return 0;
                 case fl_ni:
                     if (argc < 4){
                         printf("Missing output file path\n");
@@ -167,21 +167,21 @@ int main(int argc, char* argv[]) {
                     FILE* file_ni = fopen(argv[3], "w");
                     if (file_ni == NULL) {
                         printf("Failed to open output file\n");
-                        return 0;
+                        return 1;
                     }
                     flag_i(input_file, file_ni);
                     fclose(file_ni);
-                    break;
+                    return 0;
                 case fl_s:
                     out_name(argv[2], sd);
                     FILE* file_s = fopen(sd, "w");
                     if (file_s == NULL) {
                         printf("Failed to open output file\n");
-                        return 0;
+                        return 1;
                     }
                     flag_s(input_file, file_s);
                     fclose(file_s);
-                    break;
+                    return 0;
                 case fl_ns:
                     if (argc < 4){
                         printf("Missing output file path\n");
@@ -190,11 +190,11 @@ int main(int argc, char* argv[]) {
                     FILE* file_ns = fopen(argv[3], "w");
                     if (file_ns == NULL) {
                         printf("Failed to open output file\n");
-                        return 0;
+                        return 1;
                     }
                     flag_s(input_file, file_ns);
                     fclose(file_ns);
-                    break;
+                    return 0;
                 case fl_a:
                     out_name(argv[2], sd);
                     FILE* file_a = fopen(sd, "w");
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
                     }
                     flag_a(input_file, file_a);
                     fclose(file_a);
-                    break;
+                    return 0;
                 case fl_na:
                     if (argc < 4){
                         printf("Missing output file path\n");
@@ -213,14 +213,15 @@ int main(int argc, char* argv[]) {
                     FILE* file_na = fopen(argv[3], "w");
                     if (file_na == NULL) {
                         printf("Failed to open output file\n");
-                        return 0;
+                        return 1;
                     }
                     flag_a(input_file, file_na);
                     fclose(file_na);
-                    break;
+                    return 0;
             }
             fclose(input_file);
         }
     }
+    printf("%s", "Wrong flag\n");
     return 0;
 }
