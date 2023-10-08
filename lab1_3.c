@@ -59,7 +59,7 @@ int flag_m(int a, int b) {
     if (a == 0 || b == 0){
         return -1;
     } 
-    if (a % b){
+    if (a % b == 0){
         return 0;
     } 
     return 1;
@@ -93,7 +93,7 @@ int main(int argc, char* argv[]){
                 case fl_q:
                     if (argc != 6){
                         printf("Incorrect number of flags\n");
-                        break;
+                        return 1;
                     }
                     double epsilon = atof(argv[2]);
                     double coefficients[] = { atof(argv[3]), atof(argv[4]), atof(argv[5]) };
@@ -109,7 +109,9 @@ int main(int argc, char* argv[]){
 
                     int unique_permutations = 0;
                     double** roots = (double**)malloc(num_permutations * sizeof(double*));
-
+                    if (roots == NULL){
+                        printf("Error of memory\n");
+                    }
                     for (int j = 0; j < num_permutations; j++) {
                         roots[j] = flag_q(epsilon, permutations[j][0], permutations[j][1], permutations[j][2], massive);
                         if (roots[j] != NULL) {
@@ -132,7 +134,7 @@ int main(int argc, char* argv[]){
                     
                     free(roots);
                     
-                    break;
+                    return 0;
 
                 case fl_m:
                     result = flag_m(atoi(argv[2]), atoi(argv[3]));
@@ -145,11 +147,11 @@ int main(int argc, char* argv[]){
                     else{
                         printf("Not multiple\n");
                     }
-                    break;
+                    return 0;
                 
                 case fl_t:
                     if (argc != 6){
-                        printf("Incorrect number of flags\n");
+                        printf("Incorrect number of arguments\n");
                         break;;
                     }
                     result = flag_t(atof(argv[2]), atof(argv[3]), atof(argv[4]), atof(argv[5]));
@@ -159,8 +161,10 @@ int main(int argc, char* argv[]){
                     else{
                         printf("Can't be\n");
                     }
-                    break;
+                    return 0;
             }
         }
     }
+    printf("%s", "Wrong flag\n");
+    return 0;
 }
