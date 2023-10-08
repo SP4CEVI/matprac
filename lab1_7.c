@@ -10,12 +10,14 @@ void ascii_to_base(int asciiCode, int base, char result[]) {
 
     if (quotient == 0) {
         result[index++] = '0';
-    } else {
+    } 
+    else {
         while (quotient > 0) {
             remainder = quotient % base;
             if (remainder < 10) {
                 result[index++] = remainder + '0';
-            } else {
+            } 
+            else {
                 result[index++] = remainder - 10 + 'A';
             }
             quotient /= base;
@@ -119,14 +121,14 @@ void flag_a(char* output_file, char* file) {
     FILE* fp_output = fopen(output_file, "w");
     if (fp_output == NULL) {
         printf("Error of open output file.\n");
-        return;
+        return 1;
     }
     
     FILE* fp_file = fopen(file, "r");
     if (fp_file == NULL) {
         printf("Error of open: %s\n", file);
         fclose(fp_output);
-        return;
+        return 2;
     }
     
     char buffer[256];
@@ -184,7 +186,7 @@ void flag_a(char* output_file, char* file) {
 int main(int argc, char** argv) {
     if (argc < 4) {
         printf("Wrong number of arguments\n");
-        return 1;
+        return 3;
     }
     
     char* flag = argv[1];
@@ -192,7 +194,7 @@ int main(int argc, char** argv) {
     if (strcmp(flag, "-r") == 0) {
         if (argc != 5) {
             printf("Wrong number of arguments for -r.\n");
-            return 1;
+            return 4;
         }
         
         char* output_file = argv[2];
@@ -204,7 +206,7 @@ int main(int argc, char** argv) {
     else if (strcmp(flag, "-a") == 0) {
         if (argc != 4) {
             printf("Wrong number of arguments for -a.\n");
-            return 1;
+            return 5;
         }
         
         char* output_file = argv[2];
@@ -214,7 +216,7 @@ int main(int argc, char** argv) {
     } 
     else {
         printf("Wrong flag: %s\n", flag);
-        return 1;
+        return 6;
     }
     return 0;
 }
