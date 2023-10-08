@@ -79,7 +79,10 @@ int main(int argc, char* argv[]) {
 
     double x = 3.0;
     long double epsilon = atof(argv[1]);
-    
+    if (epsilon <= 0.0){
+        printf("Wrong epsilon\n");
+        return 1;
+    }
 
     double result_1 = sum_a(x, epsilon);
     double result_2 = sum_b(x, epsilon);
