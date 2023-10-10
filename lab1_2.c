@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <stdbool.h>
 
 
 unsigned long long fact(int n) {
@@ -27,28 +28,38 @@ double e_sum(double epsilon){
 
 
 double e_equation(double epsilon){
-    double x = 1.0;
-    while (fabs(log(x) - 1.0) > epsilon) {
-        x += epsilon;
+    double a = 0;
+    double b = 100;
+    double c;
+    while (fabs(b - a) > epsilon) {
+        c = (a + b) / 2.0;
+        double f = log(c);
+        
+        if (fabs(f - 1) < epsilon) {
+            return c;
+        } else if (f < 1) {
+            a = c;
+        } else {
+            b = c;
+        }
     }
-    return x;
+    
+    return (a + b) / 2.0;
 }
 
 
 double e_limit(double epsilon){
-    double e = 1.0;
+    double e = 0.0;
     double prev_e = 0.0;
     int n = 1;
 
-    while (fabs(e - prev_e) > epsilon) {
-        prev_e = e;
-
+    while (n){
         e = pow((1 + (1.0 / n)), n);
-        
         n++;
+        if(1.0 / n < epsilon){
+            return e;
+        }
     }
-
-    return e;
 }
 
 
@@ -71,8 +82,8 @@ double pi_sum(double epsilon){
 
 
 double pi_equation(double epsilon){
-    long double res = 0;
-    long double term = 0;
+    double res = 0;
+    double term = 0;
     int n = 1;
     res = pow(-1, n - 1) / (2 * n -1);
 
@@ -86,28 +97,25 @@ double pi_equation(double epsilon){
 
 
 double pi_limit(double epsilon){
-    double pi = 1.0;
-    double prev_pi = 0.0;
+    double res = 0.0;
+    double res_midl = 1.0;
+    int sign = 1;
     int n = 1;
-
-    while (fabs(pi - prev_pi) > epsilon) {
-        prev_pi = pi;
-
-        double numerator = pow(2, n) * fact(n);
-        double denominator = n * pow(fact(2 * n), 2);
-
-        pi = pow(numerator, 4) / denominator;
-
-        n++;
+    
+    while (fabs(res_midl) >= epsilon) {
+        res += res_midl;
+        sign *= -1;
+        n += 2;
+        res_midl = sign * (1.0 / n);
     }
-
-    return pi;
+    
+    return res * 4.0;
 }
 
 
 double ln2_sum(double epsilon){
-    long double res = 0.0;
-    long double term = 0.0;
+    double res = 0.0;
+    double term = 0.0;
     int n = 1;
     res = pow(-1, n - 1) / n;
 
@@ -130,15 +138,15 @@ double ln2_equation(double epsilon){
 
 
 double ln2_limit(double epsilon){
-    double term = 0.0;
-    double n = 1.0;
-    while (1) {
-        term = n * (pow(2.0, 1.0 / n) - 1.0);
-        if (fabs(term - log(2.0)) < epsilon) {
-            return term;
-        }
+    double term = 1.0;
+    int n = 1;
+    double prev = 0.0;
+    while (fabs(term - prev) >= epsilon ) {
+        term = prev;
+        prev += 1 / (n * pow(2.0, n));;
         n++;
     }
+    return term;
 }
 
 
@@ -159,11 +167,23 @@ double sqrt2_sum(double epsilon) {
 
 
 double sqrt2_equation(double epsilon) {
-    double res = epsilon;
-    while (pow(res, 2) - 2 < epsilon) {
-        res += epsilon;
+    double a = 0;
+    double b = 100;
+    double c;
+    while (fabs(b - a) > epsilon) {
+        c = (a + b) / 2.0;
+        double f = pow(c, 2);
+        
+        if (fabs(f - 2) < epsilon) {
+            return c;
+        } else if (f < 2) {
+            a = c;
+        } else {
+            b = c;
+        }
     }
-    return res;
+    
+    return (a + b) / 2.0;
 }
 
 
@@ -172,10 +192,10 @@ double sqrt2_limit(double epsilon) {
     double term = 0;
     int n = 1;
 
-    while (n) {
+    while (n){
         term = term - (pow(term, 2) / 2) + 1;
         n++;
-        if (fabs(term - res) < epsilon) {
+        if(fabs(term - res) < epsilon){
             return term;
         }
         res = term;
@@ -200,23 +220,33 @@ double gamma_sum(double epsilon) {
 
 
 double gamma_equation(double epsilon) {
-    double res = 0.0;
-    double limit = 1.0;
+    double term = 1.0;
     int n = 2;
-
-    while (fabs(limit - limit * (1 - 1.0 / n)) > epsilon) {
-        limit *= 1 - 1.0 / n;
-        n++;
+    int l = 1;
+    while (1.0 / l * exp(1) > epsilon) {
+        l += 1;
     }
-    limit *= log(n);
-
-    while (res <= log(limit)) {
-        res += epsilon;
+    bool simple[l+1];
+    for (int i = 2; i <= l; i++) {
+        simple[i] = true;
+    }
+    for (int p = 2; p * p <= l; p++) {
+        if (simple[p] == true) {
+            for (int i = p * p; i <= l; i += p) {
+                simple[i] = false;
+            }
+        }
     }
 
-    return res;
+    for (int i = 2; i <= l; i++) {
+        if (simple[i]) {
+            term *= (i - 1) * 1.0 / i;
+        }
+    }
+
+    return -logl(term * logl(l));
+
 }
-
 
 double gamma_limit(double epsilon) {
     double res = 0.0;
@@ -241,7 +271,10 @@ int main(int argc, char* argv[]) {
     }
 
     double epsilon = atof(argv[1]);
-
+    if (epsilon <= 0.0){
+        printf("Wrong epsilon\n");
+        return 1;
+    }
     double e = e_sum(epsilon);
     printf("e (Sum): %.6f\n", e);
 
