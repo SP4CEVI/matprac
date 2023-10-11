@@ -226,7 +226,11 @@ double gamma_equation(double epsilon) {
     while (1.0 / l * exp(1) > epsilon) {
         l += 1;
     }
-    bool simple[l+1];
+    bool *simple = malloc((l + 1) * sizeof(bool));
+    if (simple == NULL) {
+        printf("Error of memory\n");
+        return 1;
+    }
     for (int i = 2; i <= l; i++) {
         simple[i] = true;
     }
@@ -243,7 +247,7 @@ double gamma_equation(double epsilon) {
             term *= (i - 1) * 1.0 / i;
         }
     }
-
+    free(simple);
     return -logl(term * logl(l));
 
 }
@@ -319,6 +323,6 @@ int main(int argc, char* argv[]) {
 
     double gamma_lim = gamma_limit(epsilon);
     printf("gamma (Limit): %.6f\n", gamma_lim);
-
+    
     return 0;
 }
