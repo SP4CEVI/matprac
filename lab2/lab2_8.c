@@ -1,120 +1,116 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <ctype.h>
+#include <time.h>
+#include <math.h>
 #include <stdarg.h>
 #include <string.h>
 
-typedef enum {
-    MEMORY_SUCCESS,
-    MEMORY_FAILURE
-} MemoryStatus;
 
-typedef enum {
-    BASE_SUCCESS,
-    BASE_FAILURE
-} BaseStatus;
+void addNumbers(int base, char* result, const char* number) {
 
-MemoryStatus addNumbers(char* num1, char* num2, int base, char** result) {
-    int len1 = strlen(num1);
-    int len2 = strlen(num2);
-    int i, j, carry = 0;
 
-    *result = (char*)malloc(sizeof(char) * (len1 > len2 ? len1 + 1 : len2 + 1));
-    if (*result == NULL) {
-        printf("Failed to allocate memory for result.\n");
-        return MEMORY_FAILURE;
-    }
+    char HexSymbols[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
-    int index = 0;
-    for (i = len1 - 1, j = len2 - 1; (i >= 0 && j >= 0) || carry; i--, j--, index++) {
-        int digit1 = (i >= 0) ? (num1[i] - '0') : 0;
-        int digit2 = (j >= 0) ? (num2[j] - '0') : 0;
-        int sum = digit1 + digit2 + carry;
+    int carry = 0;
+    int digit1, digit2, sum;
+    int max = (strlen(number) > strlen(result)) ? strlen(number) : strlen(result);
+    int l = 0;
 
-        (*result)[index] = (char)((sum % base) + '0');
-        carry = sum / base;
-    }
+    for (int i = 0; i != max; i += 1) {
 
-    (*result)[index] = '\0';
-
-    for (i = 0, j = index - 1; i < j; i++, j--) {
-        char temp = (*result)[i];
-        (*result)[i] = (*result)[j];
-        (*result)[j] = temp;
-    }
-
-    return MEMORY_SUCCESS;
-}
-
-BaseStatus sumNumbers(int base, int numCount, char** numbers, char** sum) {
-    if (base < 2 || base > 36) {
-        printf("Base must be between 2 and 36 inclusive.\n");
-        return BASE_FAILURE;
-    }
-
-    int i;
-
-    *sum = strdup(numbers[0]);
-    if (*sum == NULL) {
-        printf("Failed to allocate memory for sum.\n");
-        return BASE_FAILURE;
-    }
-
-    for (i = 1; i < numCount; i++) {
-        char* temp;
-        MemoryStatus memoryStatus = addNumbers(*sum, numbers[i], base, &temp);
-        if (memoryStatus == MEMORY_FAILURE) {
-            printf("Failed to calculate sum.\n");
-            free(*sum);
-            return BASE_FAILURE;
+        if (isdigit(number[strlen(number) - i - 1])) {
+            digit1 = (i < strlen(number)) ? (number[strlen(number) - i - 1] - '0') : 0;
+        } else {
+            digit1 = (i < strlen(number)) ? (number[strlen(number) - i - 1] - 'A' + 10) : 0;
         }
 
-        free(*sum);
-        *sum = temp;
+        if (isdigit(result[i])) {
+            digit2 = (i < strlen(result)) ? (result[i] - '0') : 0;
+        } else {
+            digit2 = (i < strlen(result)) ? (result[i] - 'A' + 10) : 0;
+        }
+
+        sum = digit1 + digit2 + carry;
+        carry = sum / base;
+
+        result[i] = HexSymbols[sum % base];
+        l += 1;
     }
 
-    return BASE_SUCCESS;
+    if (carry > 0) {
+        result[l] = HexSymbols[carry];
+        result[max + 1] = '\0';
+    } else {
+        result[max + 1] = '\0';
+    }
+
+    return;
+}
+
+void strrev(char* str)
+{
+    if (!str) {
+        return;
+    }
+    int i = 0;
+    int j = strlen(str) - 1;
+ 
+    while (i < j) {
+        char c = str[i];
+        str[i] = str[j];
+        str[j] = c;
+        i++;
+        j--;
+    }
+}
+
+char* sumNumbers(int base, int count, ...) {
+    va_list numbers;
+    va_start(numbers, count);
+
+    char* number = va_arg(numbers, char*);
+    char* result;
+    int len = strlen(number) + 1;
+    if ((result = (char*)malloc(sizeof(char) * len)) == NULL) {
+        return NULL;
+    }
+    for (int i = 0; i != strlen(number); i += 1) {
+        result[i] = number[strlen(number) - i - 1];
+    }
+    result[len - 1] = '\0';
+
+    for (int i = 0; i < count - 1; i += 1) {
+
+        number = va_arg(numbers, char*);
+        if (strlen(number) + 1 > len) {
+            len = strlen(number) + 1;
+            if ((result = (char*)realloc(result, sizeof(char) * len)) == NULL) {
+            return NULL;
+            }
+        }
+        
+        addNumbers(base, result, number);
+    }
+
+    va_end(numbers);
+    
+    if (result[strlen(result) -1] == '0') {
+        for (int i = strlen(result); i != 0; i -= 1) {
+            if (result[i] == '0') {
+                result[i] = '\0';
+            }
+        }
+    }
+
+    strrev(result);
+    return result;
 }
 
 int main() {
-    int base = 3;
-    int numCount = 3;
-    char* num1 = "000001234";
-    char* num2 = "56780000";
-    char* num3 = "0000009012";
-
-    BaseStatus baseStatus;
-    if (base < 2 || base > 36) {
-        printf("Base must be between 2 and 36 inclusive.\n");
-        baseStatus = BASE_FAILURE;
-    } 
-    else {
-        char** numbers = (char**)malloc(sizeof(char*) * numCount);
-        if (numbers == NULL) {
-            printf("Failed to allocate memory for numbers.\n");
-            return 1;
-        }
-
-        numbers[0] = num1;
-        numbers[1] = num2;
-        numbers[2] = num3;
-
-        char* sum = NULL;
-        BaseStatus sumStatus = sumNumbers(base, numCount, numbers, &sum);
-        if (sumStatus == BASE_SUCCESS) {
-            printf("Sum: %s\n", sum);
-            free(sum);
-        } 
-        else {
-            printf("Failed to calculate the sum.\n");
-        }
-
-        baseStatus = BASE_SUCCESS;
-        free(numbers);
-    }
-
-    if (baseStatus == BASE_FAILURE) {
-        printf("Failed to calculate the sum due to incorrect base.\n");
-    }
+    char* result = sumNumbers(1, 3, "000001234", "56780000", "00012");
+    printf("Result: %s\n", result);
+    free(result);
 
     return 0;
 }
