@@ -8,6 +8,7 @@ enum Status {
     ERROR_INVALID_FLAG,
     ERROR_INPUT_FILE,
     ERROR_OUTPUT_FILE,
+    ERROR_OF_MEMORY,
     ERROR_INVALID_NAME,
     ERROR_INVALID_SALARY
 };
@@ -78,7 +79,7 @@ enum Status read_employee_data(const char* input_file, Employee** employees, int
     *employees = malloc(capacity * sizeof(Employee));
     if (*employees == NULL) {
         fclose(file);
-        return ERROR_INPUT_FILE;
+        return ERROR_OF_MEMORY;
     }
 
     *num_employees = 0;
@@ -89,7 +90,7 @@ enum Status read_employee_data(const char* input_file, Employee** employees, int
             if (temp == NULL) {
                 fclose(file);
                 free(*employees);
-                return ERROR_INPUT_FILE;
+                return ERROR_OF_MEMORY;
             }
             *employees = temp;
             capacity *= 2;
