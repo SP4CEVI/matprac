@@ -1,0 +1,25 @@
+ID: 1
+Name: John
+Surname: Smith
+Group: GroupA
+Average Grade: 106.40
+ID: 1
+Name: John
+Surname: Smith
+Group: GroupA
+Average Grade: 89.20
+ID: 1
+Name: John
+Surname: Smith
+Group: GroupA
+Average Grade: 106.40
+ID: 1
+Name: John
+Surname: Smith
+Group: GroupA
+Average Grade: 104.40
+ID: 1
+Name: John
+Surname: Smith
+Group: GroupA
+Average Grade: 104.40
