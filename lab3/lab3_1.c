@@ -1,16 +1,17 @@
-#include <inttypes.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
+#include <inttypes.h>
 
-typedef enum {
+enum Status{
     SUCCESS,
-    INCORRECT_BASE,
-    NUMBER_IS_ZERO,
+    INVALID_BASE,
+    ZERO_VALUE,
     ERROR
-} ErrorCode;
+};
 
-void dumpSignedInt(int *ptr) {
+void printBinaryRepresentation(int *ptr) {
     unsigned char *bytePtr = (unsigned char *)ptr;
 
     for (int i = sizeof(int) - 1; i >= 0; --i) {
@@ -21,37 +22,36 @@ void dumpSignedInt(int *ptr) {
     }
 }
 
-ErrorCode intToBinOctHex(const int number, const int r) {
-    if (r < 1 || r > 5){
-        return INCORRECT_BASE;
+enum Status convertToCustomBase(const int number, const int base) {
+    if (base < 1 || base > 5) {
+        return INVALID_BASE;
     }
     
     if (number == 0) {
-        return NUMBER_IS_ZERO;
+        return ZERO_VALUE;
     } 
     else if (number < 0) {
         printf("-");
-        intToBinOctHex(-1 * number, r);
+        convertToCustomBase(-1 * number, base);
         return SUCCESS;
     }
 
     unsigned char *bytePtr = (unsigned char *)&number;
-    if (bytePtr == NULL){
+    if (bytePtr == NULL) {
         return ERROR;
     }
     int bitsRead = 0;
-    if (32 % r != 0){
-        bitsRead = r - (32 % r);
+    if (32 % base != 0) {
+        bitsRead = base - (32 % base);
     }
     int zeroFlag = 0;
     int digit = 0;
     for (int i = sizeof(int) - 1; i >= 0; --i) {
         for (int j = 7; j >= 0; --j) {
             ++bitsRead;
-            digit = digit | (bytePtr[i] >> j & 1) << (r - bitsRead);
-            if (bitsRead == r) {
-                if (digit != 0 || zeroFlag != 0) 
-                {
+            digit = digit | (bytePtr[i] >> j & 1) << (base - bitsRead);
+            if (bitsRead == base) {
+                if (digit != 0 || zeroFlag != 0) {
                     zeroFlag = 1;
                     char out = (digit < 10) ? (char)(digit + '0') : (char)(digit - 10 + 'A');
                     printf("%c", out);
@@ -61,18 +61,19 @@ ErrorCode intToBinOctHex(const int number, const int r) {
             }
         }
     }
+    printf("\n");
     return SUCCESS;
 }
 
 int main() {
     int number = -1001;
-    int r = 11;
+    int r = 4;
 
-    switch (intToBinOctHex(number, r)) {
-        case INCORRECT_BASE:
-            printf("Wrong r. r must be between 1 and 5/\n");
+    switch (convertToCustomBase(number, r)) {
+        case INVALID_BASE:
+            printf("Invalid base. The base must be between 1 and 5.\n");
             return 1;
-        case NUMBER_IS_ZERO:
+        case ZERO_VALUE:
             printf("0\n");
             break;
         default:
