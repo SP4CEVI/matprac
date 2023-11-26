@@ -1,67 +1,68 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdarg.h>
+#include <string.h>
+#include <stddef.h>
 
-typedef enum {
-    FILE_OPEN_SUCCESS,
-    FILE_OPEN_FAILURE
-} FileOpenStatus;
+enum Status {
+    SUCCESS,
+    ERROR_FILE_OPEN,
+    SUBSTRING_NOT_FOUND
+};
 
-FileOpenStatus openFile(const char* filename, FILE** file) {
-    *file = fopen(filename, "r");
-    if (*file == NULL) {
-        return FILE_OPEN_FAILURE;
-    } else {
-        return FILE_OPEN_SUCCESS;
-    }
-}
+enum Status find_substring_in_files(const char *substring, int count, ...) {
+    va_list files;
+    va_start(files, count);
 
-void searchInFiles(const char* substring, ...) {
-    va_list args;
-    va_start(args, substring);
+    enum Status status = SUCCESS;
 
-    const char* filename;
-    FILE* file;
-    int filenameIndex = 0;
-    while ((filename = va_arg(args, const char*)) != NULL) {
-        FileOpenStatus status = openFile(filename, &file);
-        if (status == FILE_OPEN_FAILURE) {
-            printf("Cannot open file: %s\n", filename);
+    for (int i = 0; i < count; i++) {
+        const char *filename = va_arg(files, const char *);
+
+        FILE *file = fopen(filename, "r");
+        if (!file) {
+            printf("Failed to open file: %s\n", filename);
+            status = ERROR_FILE_OPEN;
             continue;
         }
 
-        int lineNum = 1;
-        int charNum = 1;
-        char ch;
-        int substringIndex = 1;
+        char *line = NULL;
+        size_t line_size = 0;
+        ssize_t read;
 
-        while ((ch = fgetc(file)) != EOF) {
-            if (ch == substring[substringIndex]) {
-                substringIndex++;
-                if (substring[substringIndex] == '\0') {
-                    printf("Found at line %d, position %d in file: %s\n", lineNum, charNum - substringIndex, filename);
-                    substringIndex = 1;
-                }
-            } else {
-                substringIndex = 1;
+        int line_number = 1;
+        int found = 0;
+
+        while ((read = getline(&line, &line_size, file)) != -1) {
+            char *position = line;
+
+            while ((position = strstr(position, substring)) != NULL) {
+                int column_number = position - line + 1;
+
+                printf("File: %s, Line: %d, Char: %d\n", filename, line_number, column_number);
+
+                position++;
+                found = 1;
             }
 
-            if (ch == '\n') {
-                lineNum++;
-                charNum = 1;
-            } else {
-                charNum++;
-            }
+            line_number++;
+        }
+
+        if (!found) {
+            printf("Substring not found in file: %s\n", filename);
+            status = SUBSTRING_NOT_FOUND;
         }
 
         fclose(file);
-
-        filenameIndex++;
     }
 
-    va_end(args);
+    va_end(files);
+
+    return status;
 }
 
 int main() {
-    searchInFiles("hello", "file1.txt", "file2.txt", "file3.txt", NULL);
+    enum Status result = find_substring_in_files("111", 3, "file1.txt", "file2.txt", "file3.txt");
+    printf("Search completed successfully\n");
     return 0;
 }
