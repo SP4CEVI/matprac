@@ -670,29 +670,6 @@ int BuildTable(char * input_file){
     return SUCCESS;
 }
 
-void print_error(int error)
-{
-    switch (error)
-    {
-        case WRONG_INPUT:
-            printf("Invalid expression.\n");
-            break;
-        case WRONG_NUMBER_OF_BRACKETS:
-            printf("Parentheses mismatch.\n");
-            break;
-        case WRONG_ARGUMENTS:
-            printf("Invalid arguments in expression.\n");
-            break;
-        case ERROR_OF_MEMORY:
-            printf("Computer doesn't have enough memory.\n");
-            break;
-        case WRONG_OPERATOR:
-            printf("Incorrect operator in expression.\n");
-            break;
-        default: break;
-    }
-}
-
 int main(int argc, char * argv[]){
     if (argc != 2)
     {
