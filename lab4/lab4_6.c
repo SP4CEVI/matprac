@@ -693,7 +693,7 @@ int main(int argc, char * argv[]){
         default: 
             break;
     }
-    printf("Program has finished correcly.\n");
+    printf("Check output file.\n");
     return SUCCESS;
 }
 
