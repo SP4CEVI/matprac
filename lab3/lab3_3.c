@@ -75,6 +75,16 @@ enum Status read_employee_data(const char* input_file, Employee** employees, int
         return ERROR_INPUT_FILE;
     }
 
+    fseek(file, 0, SEEK_END);
+
+    long size = ftell(input_file);
+    if (size == 0) {
+        printf("The file is empty\n");
+        return ERROR_INPUT_FILE;
+    } 
+
+    fseek(file, 0, SEEK_SET);
+
     int capacity = 10;
     *employees = malloc(capacity * sizeof(Employee));
     if (*employees == NULL) {
