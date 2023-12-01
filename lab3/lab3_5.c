@@ -11,7 +11,8 @@ enum Status {
     ERROR_OPENING_OUTPUT_FILE,
     WRONG_DATA_IN_FILE,
     WRONG_GRADES,
-    WRONG_NUMBER_ARGUMENTS
+    WRONG_NUMBER_ARGUMENTS,
+    FILE_IS_EMPTY
 };
 
 typedef struct {
@@ -114,6 +115,16 @@ int main(int argc, char* argv[]) {
         printf("Error opening file\n");
         return ERROR_OPENING_FILE;
     }
+
+    fseek(file, 0, SEEK_END);
+
+    long size = ftell(input_file);
+    if (size == 0) {
+        printf("The file is empty\n");
+        return FILE_IS_EMPTY;
+    } 
+
+    fseek(file, 0, SEEK_SET);
 
     int num_students = count_lines(input_file);
 
