@@ -116,19 +116,11 @@ int main(int argc, char* argv[]) {
         return ERROR_OPENING_FILE;
     }
 
-    fseek(file, 0, SEEK_END);
 
-    long size = ftell(input_file);
-    if (size == 0) {
-        printf("The file is empty\n");
-        return FILE_IS_EMPTY;
-    } 
-
-    fseek(file, 0, SEEK_SET);
 
     int num_students = count_lines(input_file);
 
-    Student* students = malloc(sizeof(Student) * num_students);
+    Student* students = (Student *)malloc(sizeof(Student) * num_students);
     if (students == NULL) {
         printf("Error allocating memory\n");
         fclose(file);
@@ -136,35 +128,64 @@ int main(int argc, char* argv[]) {
     }
 
     for (int i = 0; i < num_students; i++) {
-        fscanf(file, "%d %s %s %s", &students[i].id, students[i].name, students[i].surname, students[i].group);
+        int items_read = fscanf(file, "%d %s %s %s", &students[i].id, students[i].name, students[i].surname, students[i].group);
+        if (items_read > 1) {
+            if (!is_valid_id(students[i].id) || !is_valid_name(students[i].name) || !is_valid_name(students[i].surname)) {
+                printf("Error: Invalid ID or name/surname format for student %d\n", i);
+                free(students);
+                fclose(file);
+                return WRONG_DATA_IN_FILE;
+            }
 
-        if (!is_valid_id(students[i].id) || !is_valid_name(students[i].name) || !is_valid_name(students[i].surname)) {
-            printf("Error: Invalid ID or name/surname format for student %d\n", i + 1);
+            students[i].grades = malloc(sizeof(unsigned char) * 5);
+            if (students[i].grades == NULL) {
+                printf("Error: Memory allocation failed for student %d\n", i);
+                free(students);
+                fclose(file);
+                return ERROR_MEMORY;
+            }
+
+            int num_grades_read = 0;
+            while (num_grades_read < 5 && fscanf(file, " %hhu", &students[i].grades[num_grades_read]) == 1) {
+                num_grades_read++;
+            }
+
+            if (num_grades_read != 5) {
+                printf("Error: Expected %d grades for student %d, but %d grades were read\n", 5, i + 1, num_grades_read);
+                for (int i = 0; i < num_students; i++) {
+                    free(students[i].grades);
+                }    
+                free(students);
+                fclose(file);
+                return WRONG_GRADES;
+            }
+            int extra;
+            while ((extra = fgetc(file)) != '\n' && extra != EOF) {
+                if (!isspace(extra)) {
+                    printf("Error: Extra data found after grades for student %d\n", i + 1);
+                    for (int i = 0; i < num_students; i++) {
+                        free(students[i].grades);
+                    }
+                    free(students);
+                    fclose(file);
+                    return WRONG_GRADES;
+                }
+            }
+            if (!are_valid_grades(students[i].grades)) {
+                printf("Error: Invalid grades for student %d\n", i);
+                for (int i = 0; i < num_students; i++) {
+                    free(students[i].grades);
+                }    
+                free(students);
+                fclose(file);
+                return WRONG_GRADES;
+            }
+        }
+        else{
+            printf("File has empty string\n");
             free(students);
             fclose(file);
             return WRONG_DATA_IN_FILE;
-        }
-
-        students[i].grades = malloc(sizeof(unsigned char) * 5);
-        if (students[i].grades == NULL) {
-            printf("Error: Memory allocation failed for student %d\n", i + 1);
-            free(students);
-            fclose(file);
-            return ERROR_MEMORY;
-        }
-
-        for (int j = 0; j < 5; j++) {
-            fscanf(file, " %hhu", &students[i].grades[j]);
-        }
-
-        if (!are_valid_grades(students[i].grades)) {
-            printf("Error: Invalid grades for student %d\n", i + 1);
-            for (int i = 0; i < num_students; i++) {
-                free(students[i].grades);
-            }    
-            free(students);
-            fclose(file);
-            return WRONG_GRADES;
         }
     }
 
