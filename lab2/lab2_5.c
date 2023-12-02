@@ -6,8 +6,12 @@
 #include <stdarg.h>
 #include <string.h>
 
-void reverse(char* str)
-{
+enum Status {
+    SUCCESS = 0,
+    ERROR_OF_MEMORY = -1
+};
+
+void reverse(char* str){
     if (!str) {
         return;
     }
@@ -61,10 +65,15 @@ void intToZeckendorf(unsigned int n, char* result, int* len) {
     while (i >= 0) {
 
         if (poz == (*len - 2)) {
-            *len *= 2;
-            if ((result = (char*)realloc(result, sizeof(char) * *len)) == NULL) {
-                return;
+            int newLen = *len * 2;
+            char* newBuf = (char*)realloc(result, sizeof(char) * newLen);
+            if (newBuf == NULL) {
+                
+                free(result);
+                return ERROR_OF_MEMORY;
             }
+            result = newBuf;
+            *len = newLen;
         }
 
         if (n >= fib[i]) {
@@ -127,10 +136,14 @@ void ten_to_base(int number, int base, char* bufer, int* len) {
     int r;
     int ptr = 0;
     if (ptr == (*len - 2)) {
-        *len *= 2;
-        if ((bufer = (char*)realloc(bufer, sizeof(char) * *len)) == NULL) {
-            return;
+        int newLen = *len * 2;
+        char* newBuf = (char*)realloc(bufer, sizeof(char) * newLen);
+        if (newBuf == NULL) {
+            free(bufer);
+            return ERROR_OF_MEMORY;
         }
+        bufer = newBuf;
+        *len = newLen;
     }
     while (number > 0) {
         r = number % base;
@@ -154,10 +167,14 @@ void ten_to_base_big(int number, int base, char* bufer, int* len) {
     int r;
     int ptr = 0;
     if (ptr == (*len - 2)) {
-        *len *= 2;
-        if ((bufer = (char*)realloc(bufer, sizeof(char) * *len)) == NULL) {
-            return;
+        int newLen = *len * 2;
+        char* newBuf = (char*)realloc(bufer, sizeof(char) * newLen);
+        if (newBuf == NULL) {
+            free(bufer);
+            return ERROR_OF_MEMORY;
         }
+        bufer = newBuf;
+        *len = newLen;
     }
     while (number > 0) {
         r = number % base;
@@ -254,7 +271,7 @@ int overfprintf(FILE* stream, const char* format, ...) {
             p += 3;
             int arg = va_arg(args, int);
             if ((buf = (char*)malloc(sizeof(char) * len)) == NULL) {
-                return 0;
+                return ERROR_OF_MEMORY;
             }
             intToZeckendorf(arg, buf, &len);
             int result = fputs(buf, stream);
@@ -274,7 +291,7 @@ int overfprintf(FILE* stream, const char* format, ...) {
                 base = 10;
             }
             if ((buf = (char*)malloc(sizeof(char) * len)) == NULL) {
-                return 0;
+                return ERROR_OF_MEMORY;
             }
             
             ten_to_base(arg, base, buf, &len);
@@ -295,7 +312,7 @@ int overfprintf(FILE* stream, const char* format, ...) {
                 base = 10;
             }
             if ((buf = (char*)malloc(sizeof(char) * len)) == NULL) {
-                return 0;
+                return ERROR_OF_MEMORY;
             }
             
             ten_to_base_big(arg, base, buf, &len);
@@ -395,7 +412,7 @@ int overfprintf(FILE* stream, const char* format, ...) {
             written += 1;
             poz = 0;
             if ((buf = (char*)malloc(sizeof(char) * len)) == NULL) {
-                return 0;
+                return ERROR_OF_MEMORY;
             }
             buf[poz] = '%';
             poz += 1;
@@ -403,10 +420,15 @@ int overfprintf(FILE* stream, const char* format, ...) {
             while ((*(p + 1) != ' ') && (*(p + 1) != '%') && (*(p + 1) != '\0')) {
                 p += 1;
                 if (poz == (len - 2)) {
-                    len *= 2;
-                    if ((buf = (char*)realloc(buf, sizeof(char) * len)) == NULL) {
-                        return 1;
+                    int newLen = len * 2;
+                    char* newBuf = (char*)realloc(buf, sizeof(char) * newLen);
+                    if (newBuf == NULL) {
+                        
+                        free(buf);
+                        return ERROR_OF_MEMORY;
                     }
+                    buf = newBuf;
+                    len = newLen;
                 }
                 buf[poz] = *p;
                 poz += 1;
@@ -473,7 +495,7 @@ int oversprintf(char *stream, const char *format, ...) {
             p += 3;
             int arg = va_arg(args, int);
             if ((buf = (char*)malloc(sizeof(char) * len)) == NULL) {
-                return 0;
+                return ERROR_OF_MEMORY;
             }
             intToZeckendorf(arg, buf, &len);
             int result = strlen(buf);
@@ -494,7 +516,7 @@ int oversprintf(char *stream, const char *format, ...) {
                 base = 10;
             }
             if ((buf = (char*)malloc(sizeof(char) * len)) == NULL) {
-                return 0;
+                return ERROR_OF_MEMORY;
             }
             
             ten_to_base(arg, base, buf, &len);
@@ -516,7 +538,7 @@ int oversprintf(char *stream, const char *format, ...) {
                 base = 10;
             }
             if ((buf = (char*)malloc(sizeof(char) * len)) == NULL) {
-                return 0;
+                return ERROR_OF_MEMORY;
             }
             
             ten_to_base_big(arg, base, buf, &len);
@@ -636,7 +658,7 @@ int oversprintf(char *stream, const char *format, ...) {
             written += 1;
             poz = 0;
             if ((buf = (char*)malloc(sizeof(char) * len)) == NULL) {
-                return 0;
+                return ERROR_OF_MEMORY;
             }
             buf[poz] = '%';
             poz += 1;
@@ -644,10 +666,14 @@ int oversprintf(char *stream, const char *format, ...) {
             while ((*(p + 1) != ' ') && (*(p + 1) != '%') && (*(p + 1) != '\0')) {
                 p += 1;
                 if (poz == (len - 2)) {
-                    len *= 2;
-                    if ((buf = (char*)realloc(buf, sizeof(char) * len)) == NULL) {
-                        return 1;
+                    int newLen = len * 2;
+                    char* newBuf = (char*)realloc(buf, sizeof(char) * newLen);
+                    if (newBuf != NULL) {
+                        free(buf);
+                        return ERROR_OF_MEMORY;
                     }
+                    buf = newBuf;
+                    len = newLen;
                 }
                 buf[poz] = *p;
                 poz += 1;
@@ -658,7 +684,7 @@ int oversprintf(char *stream, const char *format, ...) {
             poz += 1;
             char* busi;
              if ((busi = (char*)malloc(sizeof(char) * strlen(buf) + 1)) == NULL) {
-                return 0;
+                return ERROR_OF_MEMORY;
             }
             int sum = vsprintf(busi, buf, args);
             strcat(stream, busi);
@@ -676,7 +702,7 @@ int main() {
     int num = 123;
     printf("overprintf:\n");
     overfprintf(stdout, "s %s\n", "abc");
-    overfprintf(stdout, "d%d\n", num);
+    overfprintf(stdout, "d %d\n", num);
     overfprintf(stdout, "+.4f %+.4f\n", 0.11115);
     overfprintf(stdout, "Ro %Ro\n", num);
     overfprintf(stdout, "Zr %Zr\n", 33);
@@ -694,5 +720,5 @@ int main() {
     oversprintf(str, "%s %d %+.4f %Ro %Zr %Cv %CV %to %TO %mi %mu %md %mf\n", "abc", num, 0.11115, num, 33, 10, 3, 111, 16, "a23", 16, "A23", 16, 22, 11, 0.11, 0.11);
     printf("Result: %s", str);
 
-    return 0;
+    return SUCCESS;
 }
