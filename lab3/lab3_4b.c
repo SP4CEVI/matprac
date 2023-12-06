@@ -1,506 +1,951 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <time.h>
 #include <ctype.h>
-#include <stdbool.h>
+#include <time.h>
 
 enum Status{
-    SUCCESS,
-    ERROR_OF_MEMORY,
-    ERROR
+    SUCCESS = 0,
+    ERROR_OF_MEMORY = -1,
+    WRONG_INPUT = -2,
+    ERROR = -3
 };
 
-typedef struct {
-    char* data;
+enum Compare_Status{
+    SIMILAR = 0,
+    FIRST_IS_BIGGER = 1,
+    FIRST_IS_SMALLER = -1
+};
+
+typedef struct{
+    char * data;
     int length;
-} String;
+} String, *String_ptr;
 
-typedef struct {
-    String city;
-    String street;
-    int houseNumber;
-    String building;
-    int apartmentNumber;
-    String recipientIndex;
-} Address;
-
-enum Status createString(String* str, const char* value) {
-    if (str == NULL || value == NULL) {
-        return ERROR;
+String_ptr CreateString(const char * data){
+    String_ptr string = (String_ptr)malloc(sizeof(String));
+    if (!string){
+        return NULL;
+    } 
+    string->length = strlen(data);
+    string->data = (char*)malloc((string->length + 1) * sizeof(char));
+    if (!(string->data)) {
+        free(string);
+        return NULL;
     }
-
-    str->length = strlen(value);
-    str->data = (char*)malloc((str->length + 1) * sizeof(char));
-    if (str->data == NULL) {
-        return ERROR_OF_MEMORY;
-    }
-
-    strcpy(str->data, value);
-    return SUCCESS;
+    strcpy(string->data, data);
+    return string;
 }
 
-enum Status deleteString(String* str) {
-    if (str == NULL) {
-        return ERROR;
-    }
-
-    free(str->data);
-    str->data = NULL;
-    str->length = 0;
-    return SUCCESS;
-}
-
-typedef struct {
-    Address recipient;
-    double weight;
-    String id;
-    String creationTime;
-    String creationDate;
-    String deliveryTime;
-} Mail;
-
-typedef struct {
-    Address* department;
-    Mail* mails;
-    int mailCount;
-    Mail* deliveredMails;
-    int deliveredMailCount;
-    Mail* undeliveredMails;
-    int undeliveredMailCount;
-} Post;
-
-
-void printAddress(Address* address) {
-    printf("City: %s\n", address->city.data);
-    printf("Street: %s\n", address->street.data);
-    printf("House number: %d\n", address->houseNumber);
-    printf("Building: %s\n", address->building.data);
-    printf("Apartment number: %d\n", address->apartmentNumber);
-    printf("Recipient index: %s\n", address->recipientIndex.data);
-}
-
-void printMail(Mail* mail) {
-    printf("Recipient:\n");
-    printAddress(&mail->recipient);
-    printf("Weight: %.2f\n", mail->weight);
-    printf("Id: %s\n", mail->id.data);
-    printf("Creation time: %s %s\n", mail->creationDate.data, mail->creationTime.data);
-
-    if (strlen(mail->deliveryTime.data) > 0) {
-        printf("Delivery time: %s\n", mail->deliveryTime.data);
-    } else {
-        printf("Delivery time: Not delivered\n");
-    }
-
-    printf("\n");
-}
-
-Post createPost() {
-    Post post;
-    post.department = (Address*)malloc(sizeof(Address));
-    if(post.department == NULL){
+void DeleteString(String_ptr string){
+    if (!string){
         return;
+    } 
+
+    if (string->data){
+        free(string->data);
     }
-    post.mailCount = 0;
-    post.mails = NULL;
+
+    free(string);
+}
+
+int CompareStrings(const String_ptr first, const String_ptr second){
+    if (first->length > second->length){
+        return FIRST_IS_BIGGER;
+    } 
+    else if (first->length < second->length){
+        return FIRST_IS_SMALLER;
+    } 
+
+    int length = first->length;
+    for (int i = 0; i < length; i++){
+        if ((first->data)[i] > (second->data)[i]){
+            return FIRST_IS_BIGGER;
+        } 
+        else if ((first->data)[i] < (second->data)[i]){
+            return FIRST_IS_SMALLER;
+        } 
+    }
+    return SIMILAR;
+}
+
+int AreStringsEqual(const String_ptr first, const String_ptr second){
+    if (first->length != second->length){
+        return ERROR;
+    } 
+
+    int length = first->length;
+    for (int i = 0; i < length; i++){
+        if ((first->data)[i] != (second->data)[i]){
+            return ERROR;
+        } 
+    }
+    return SUCCESS;
+}
+
+void CopyString(const String_ptr first, String_ptr second){
+    second->length = first->length;
+    strcpy(second->data, first->data);
+    return;
+}
+
+String_ptr Dublicate(const String_ptr string){
+    String_ptr new = CreateString(string->data);
+    if (!new){
+        return NULL;
+    } 
+    return new;
+}
+
+int DynamicCopy(String_ptr new, const String_ptr string){
+    if (!new){
+        return ERROR;
+    }
+    new->length = string->length;
+    new->data = (char*)malloc((new->length) * sizeof(char));
+    if (!(new->data)){
+        return ERROR_OF_MEMORY;
+    } 
+    memcpy(new->data, string->data, string->length);
+    return SUCCESS;
+}
+
+String_ptr ConcatString(const String_ptr first, const String_ptr second){
+    char * data = (char*)malloc(((first->length) + (second->length) + 1) * sizeof(char));
+    if (!data){
+        return NULL;
+    } 
+
+    memcpy(data, first->data, first->length);
+    memcpy(data + first->length, second->data, second->length);
+
+    String_ptr string = CreateString(data);
+    if (!string){
+        free(data);
+        return NULL;
+    }
+    free(data);
+    return string;
+}
+
+typedef struct{
+    String_ptr city;
+    String_ptr street;
+    unsigned int houseNumber; 
+    String_ptr building;
+    unsigned int flatNumber;
+    String_ptr index;
+} Adress, *Adress_ptr;
+
+typedef struct{
+    Adress_ptr recipient;
+    double weight;
+    String_ptr id;
+    String_ptr creationTime;
+    String_ptr deliveryTime;
+} Mail, *Mail_ptr, **Mail_array;
+
+typedef struct{
+    Adress_ptr postAdress;
+    Mail_array mails;
+} Post, *Post_ptr;
+
+Post_ptr CreatePost(Adress_ptr recipient){
+    Post_ptr post = (Post_ptr)malloc(sizeof(Post));
+    if (!post){
+        return NULL;
+    } 
+    post->postAdress = recipient;
+    post->mails = NULL;
     return post;
 }
 
-void deletePost(Post* post) {
-    if (post == NULL) {
-        return;
+Adress_ptr CreateAdress(char * city, char * street, unsigned int houseNumber, char * building, unsigned int flatNumber, char * index){
+    String_ptr new_city = CreateString(city);
+    if (!new_city){
+        return NULL;
+    } 
+
+    String_ptr new_street = CreateString(street);
+    if (!new_street){
+        DeleteString(new_city);
+        return NULL;
     }
 
-    deleteString(&post->department->city);
-    deleteString(&post->department->street);
-    deleteString(&post->department->building);
-    deleteString(&post->department->recipientIndex);
-    free(post->department);
-
-    for (int i = 0; i < post->mailCount; i++) {
-        deleteString(&post->mails[i].recipient.city);
-        deleteString(&post->mails[i].recipient.street);
-        deleteString(&post->mails[i].recipient.building);
-        deleteString(&post->mails[i].recipient.recipientIndex);
-        deleteString(&post->mails[i].id);
-        deleteString(&post->mails[i].creationDate);
-        deleteString(&post->mails[i].creationTime);
-        deleteString(&post->mails[i].deliveryTime);
+    String_ptr new_building = CreateString(building);
+    if (!new_building){
+        DeleteString(new_city);
+        DeleteString(new_street);
+        return NULL;
     }
 
-    free(post->mails);
-    post->mails = NULL;
-    post->mailCount = 0;
-}
-
-int checkAllDigits(const char* str) {
-    for (int i = 0; str[i] != '\0'; i++) {
-        if (!isdigit(str[i])) {
-            return 0;
-        }
-    }
-    return 1;
-}
-
-bool checkDate(const char* date) {
-    int day, month, year;
-    int result = sscanf(date, "%d:%d:%d", &day, &month, &year);
-    if (result != 6) {
-        return false;
-    }
-    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900) {
-        return false;
-    }
-    return true;
-}
-
-bool checkTime(const char* time) {
-    int hour, min, sec;
-    int result = sscanf(time, "%d:%d:%d", &hour, &min, &sec);
-    if (result != 6) {
-        return false;
-    }
-    if (hour < 0 || hour > 23 || min < 0 || min > 59 || sec < 0 || sec > 59) {
-        return false;
-    }
-    return true;
-}
-
-bool checkDateTimeFormat(const char* datetime) {
-    int day, month, year, hour, min, sec;
-    int result = sscanf(datetime, "%d:%d:%d %d:%d:%d", &day, &month, &year, &hour, &min, &sec);
-    if (result != 6) {
-        return false;
-    }
-    if (day < 1 || day > 31 || month < 1 || month > 12 || year < 1900 || hour < 0 || hour > 23 || min < 0 || min > 59 || sec < 0 || sec > 59) {
-        return false;
-    }
-    return true;
-}
-
-
-int compareMail(const void* a, const void* b) {
-    const Mail* mail1 = (const Mail*)a;
-    const Mail* mail2 = (const Mail*)b;
-    
-    int indexComparison = strcmp(mail1->recipient.recipientIndex.data, mail2->recipient.recipientIndex.data);
-    if (indexComparison != 0) {
-        return indexComparison;
+    String_ptr new_index = CreateString(index);
+    if (!new_index)
+    {
+        DeleteString(new_city);
+        DeleteString(new_street);
+        DeleteString(new_building);
+        return NULL;
     }
     
-    return strcmp(mail1->id.data, mail2->id.data);
+    Adress_ptr recipient = (Adress_ptr)malloc(sizeof(Adress));
+    if (!recipient){
+        DeleteString(new_city);
+        DeleteString(new_street);
+        DeleteString(new_building);
+        DeleteString(new_index);
+        return NULL;
+    }
+
+    recipient->city = new_city;
+    recipient->street = new_street;
+    recipient->houseNumber = houseNumber;
+    recipient->building = new_building;
+    recipient->flatNumber = flatNumber;
+    recipient->index = new_index;
+
+    return recipient;
 }
 
-enum Status addMail(Post* post) {
-    Mail mail;
-    String city, street, building, recipientIndex;
-    createString(&city, "");
-    createString(&street, "");
-    createString(&building, "");
-    createString(&recipientIndex, "");
+Mail_ptr CreateMail(Adress_ptr recipient, double weight, char * id, char * creationTime, char * deliveryTime){
+    String_ptr new_id = CreateString(id);
+    if (!new_id){
+        return NULL;
+    } 
 
-    printf("Enter recipient's address:\n");
-    printf("City: ");
-    char temp[100];
-    char temp1[100];
-    scanf("%s", temp);
-    if (strlen(temp) == 0) {
-        printf("Invalid input. City cannot be empty.\n");
-        return ERROR;
-    }
-    createString(&city, temp);
-
-    printf("Street: ");
-    scanf("%s", temp);
-    if (strlen(temp) == 0) {
-        printf("Invalid input. Street cannot be empty.\n");
-        return ERROR;
-    }
-    createString(&street, temp); 
-
-    printf("House number: ");
-    if (scanf("%d", &(mail.recipient.houseNumber)) != 1 || mail.recipient.houseNumber <= 0) {
-        printf("Invalid input. House number must be a positive integer.\n");
-        return ERROR;
+    String_ptr new_creationTime = CreateString(creationTime);
+    if (!new_creationTime){
+        DeleteString(new_id);
+        return NULL;
     }
 
-    printf("Building: ");
-    scanf("%s", temp);
-    createString(&building, temp);
-
-    printf("Apartment number: ");
-    if (scanf("%d", &(mail.recipient.apartmentNumber)) != 1 || mail.recipient.apartmentNumber <= 0) {
-        printf("Invalid input. Apartment number must be a positive integer.\n");
-        return ERROR;
+    String_ptr new_deliveryTime = CreateString(deliveryTime);
+    if (!new_deliveryTime){
+        DeleteString(new_id);
+        DeleteString(new_creationTime);
+        return NULL;
     }
 
-    printf("Recipient index: ");
-    scanf("%s", temp);
-    if (strlen(temp) != 6 || !checkAllDigits(temp)) {
-        printf("Invalid input. Recipient index must be a 6-digit number.\n");
-        return ERROR;
-    }
-    createString(&recipientIndex, temp);
-
-    mail.recipient.city = city;
-    mail.recipient.street = street;
-    mail.recipient.building = building;
-    mail.recipient.recipientIndex = recipientIndex;
-
-    printf("Enter mail details:\n");
-    printf("Weight: ");
-    if (scanf("%lf", &(mail.weight)) != 1 || mail.weight < 0) {
-        printf("Invalid input. Weight must be a non-negative number.\n");
-        return ERROR;
+    Mail_ptr mail = (Mail_ptr)malloc(sizeof(Mail));
+    if (!mail){
+        DeleteString(new_id);
+        DeleteString(new_creationTime);
+        DeleteString(new_deliveryTime);
+        return NULL;
     }
 
-    printf("Id: ");
-    scanf("%s", temp);
-    if (strlen(temp) != 14 || !checkAllDigits(temp)) {
-        printf("Invalid input. Id must be a 14-digit number.\n");
-        return ERROR;
+    mail->recipient = recipient;
+    mail->weight = weight;
+    mail->id = new_id;
+    mail->creationTime = new_creationTime;
+    mail->deliveryTime = new_deliveryTime;
+
+    return mail;
+}
+
+void DeleteAdress(Adress_ptr recipient){
+    DeleteString(recipient->city);
+    DeleteString(recipient->street);
+    DeleteString(recipient->building);
+    DeleteString(recipient->index);
+    free(recipient);
+}
+
+void DeleteMail(Mail_ptr mail){
+    DeleteAdress(mail->recipient);
+    DeleteString(mail->id);
+    DeleteString(mail->creationTime);
+    DeleteString(mail->deliveryTime);
+    free(mail);
+}
+
+void DeletePost(Post_ptr post, int length){
+    DeleteAdress(post->postAdress);
+    for (int i = 0; i < length; i++){
+        DeleteMail((post->mails)[i]);
     }
-    createString(&(mail.id), temp);
+    free(post);
+}
 
-    printf("Creation time (dd:MM:yyyy hh:mm:ss): ");
-    scanf("%s %s", temp, temp1);
-    createString(&(mail.creationDate), temp);
-    createString(&(mail.creationTime), temp1);
-
-    while (getchar() != '\n');
-
-    printf("Delivery time (dd:MM:yyyy hh:mm:ss): ");
-    fgets(temp, sizeof(temp), stdin);
-    temp[strcspn(temp, "\n")] = '\0';
-    if (!checkDateTimeFormat(temp)) {
-        printf("Invalid input. Please enter the time in the format dd:MM:yyyy hh:mm:ss\n");
-        return ERROR;
+int ValidateName(char * string){
+    int length = strlen(string);
+    for (int i = 1; i < length; i++){
+        if (!islower(string[i])){
+            return WRONG_INPUT;
+        } 
     }
-    createString(&(mail.deliveryTime), temp);
+    return SUCCESS;
+}
+
+int ValidateCityStreet(char * string){
+    int length = strlen(string);
+    if (length == 0){
+        return WRONG_INPUT;
+    } 
+
+    for (int i = 0; i < length; i++){
+        if (!isalpha(string[i])){
+            return WRONG_INPUT;
+        } 
+    }
+    return SUCCESS;
+}
+
+int ValidateHouseFlat(int house){
+    if (house <= 0){
+        return WRONG_INPUT;
+    } 
+    return SUCCESS;
+}
+
+int ValidateBuilding(char * string){
+    if (strcmp(string, "-") == SUCCESS){
+        return SUCCESS;
+    } 
+
+    int length = strlen(string);
+    for (int i = 0; i < length; i++){
+        if (!(isalpha(string[i]) || isdigit(string[i]))){
+            return WRONG_INPUT;
+        } 
+    }
+    return SUCCESS;
+}
+
+int ValidateWeight(double weight){
+    double eps = 0.0000001;
+    if (weight > eps){
+        return SUCCESS;
+    } 
+    return WRONG_INPUT;
+}
+
+int ValidateDigitIndex(char * string){
+    int length = strlen(string);
+    if (length == 0){
+        return WRONG_INPUT;
+    } 
+
+    for (int i = 0; i < length; i++){
+        if (!isdigit(string[i])){
+            return WRONG_INPUT;
+        } 
+    }
+    return SUCCESS;
+}
+
+int ValidateId(char * string){
+    int result = ValidateDigitIndex(string);
+    if (result == WRONG_INPUT){
+        return WRONG_INPUT;
+    } 
     
-    if (strlen(mail.deliveryTime.data) > 0) {
-        post->deliveredMailCount++;
-        Mail* newDeliveredMails = (Mail*)realloc(post->deliveredMails, post->deliveredMailCount * sizeof(Mail));
-        if (newDeliveredMails == NULL) {
-            return ERROR_OF_MEMORY;
-        }
-        post->deliveredMails = newDeliveredMails;
-        post->deliveredMails[post->deliveredMailCount - 1] = mail;
-    } else {
-        post->undeliveredMailCount++;
-        Mail* newDeliveredMails = (Mail*)realloc(post->undeliveredMails, post->undeliveredMailCount * sizeof(Mail));
-        if (newDeliveredMails == NULL) {
-            return ERROR_OF_MEMORY;
-        }
-        post->undeliveredMails = newDeliveredMails;
+    result = strlen(string);
+    if (result != 14){
+        return WRONG_INPUT;
+    } 
+    return SUCCESS;
+}
 
-        post->undeliveredMails[post->undeliveredMailCount - 1] = mail;
+int ValidateTime(int day, int month, int year, int hours, int minutes, int seconds){
+    if (year < 1900 || year > 9999 || month <= 0 || month > 12 || day <= 0 || day > 31 || hours < 0 || hours > 24 || minutes < 0 || minutes > 59 || seconds < 0 || seconds > 59){
+        return WRONG_INPUT;
     }
-    
-    post->mailCount++;
-    Mail* newDeliveredMails = (Mail*)realloc(post->undeliveredMails, post->undeliveredMailCount * sizeof(Mail));
-    if (newDeliveredMails == NULL) {
-        return ERROR_OF_MEMORY;
+    return SUCCESS;
+}
+
+int Validation(char * city, char * street, int houseNumber, char * building, int flatNumber, char * index){
+    int result;
+    result = ValidateCityStreet(city);
+    if (result != SUCCESS){
+        return WRONG_INPUT;
+    } 
+    result = ValidateName(city);
+    if (result != SUCCESS){
+        return WRONG_INPUT;
+    } 
+
+    result = ValidateCityStreet(street);
+    if (result != SUCCESS){
+        return WRONG_INPUT;
+    } 
+    result = ValidateName(street);
+    if (result != SUCCESS){
+        return WRONG_INPUT;
+    } 
+
+    result = ValidateHouseFlat(houseNumber);
+    if (result != SUCCESS){
+        return WRONG_INPUT;
+    } 
+
+    result = ValidateBuilding(building);
+    if (result != SUCCESS){
+        return WRONG_INPUT;
+    } 
+
+    result = ValidateHouseFlat(flatNumber);
+    if (result != SUCCESS){
+        return WRONG_INPUT;
+    } 
+
+    result = ValidateDigitIndex(index);
+    if (result != SUCCESS || strlen(index) != 6){
+        return WRONG_INPUT;
     }
-    post->mails = newDeliveredMails;
-    post->mails[post->mailCount - 1] = mail;
 
     return SUCCESS;
 }
 
+void PrintAdress(Adress_ptr recipient){
+    printf("%s ", recipient->city->data);
+    printf("%s ", recipient->street->data);
+    printf("%d ", recipient->houseNumber);
+    printf("%s ", recipient->building->data);
+    printf("%d ", recipient->flatNumber);
+    printf("%s\n", recipient->index->data);
+}
 
-void removeMail(Post* post, const char* id) {
-    int removalIndex = -1;
-    int deliveryIndex = -1;
-    int undeliveryIndex = -1;
+int TimeDifferenceChar(char * creation, char * delivered){
+    time_t time1;
+    int day, month, year, hours, minutes, seconds;
+    sscanf(creation, "%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds);
+    struct tm ttime;
+    ttime.tm_mday = day;
+    ttime.tm_mon = month - 1;
+    ttime.tm_year = year - 1900;
+    ttime.tm_hour = hours;
+    ttime.tm_min = minutes;
+    ttime.tm_sec = seconds;
+    ttime.tm_isdst = -1;
+    time_t time2;
+    sscanf(delivered, "%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds);
+    struct tm ttime1;
+    ttime1.tm_mday = day;
+    ttime1.tm_mon = month - 1;
+    ttime1.tm_year = year - 1900;
+    ttime1.tm_hour = hours;
+    ttime1.tm_min = minutes;
+    ttime1.tm_sec = seconds;
+    ttime1.tm_isdst = -1;
+
+    time_t time_1 = mktime(&ttime);
+    time_t time_2 = mktime(&ttime1);
+
+    if (time_1 < time_2){
+        return -1; 
+    } 
+    if (time_1 > time_2){
+        return 1;
+    } 
+    return 0;
+}
+
+int TimeDifference(String_ptr creation, String_ptr delivered){
+    time_t time1;
+    int day, month, year, hours, minutes, seconds;
+    sscanf(creation->data, "%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds);
+    struct tm ttime;
+    ttime.tm_mday = day;
+    ttime.tm_mon = month - 1;
+    ttime.tm_year = year - 1900;
+    ttime.tm_hour = hours;
+    ttime.tm_min = minutes;
+    ttime.tm_sec = seconds;
+    ttime.tm_isdst = -1;
+    time_t time2;
+    sscanf(delivered->data, "%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds);
+    struct tm ttime1;
+    ttime1.tm_mday = day;
+    ttime1.tm_mon = month - 1;
+    ttime1.tm_year = year - 1900;
+    ttime1.tm_hour = hours;
+    ttime1.tm_min = minutes;
+    ttime1.tm_sec = seconds;
+    ttime1.tm_isdst = -1;
+
+    time_t time_1 = mktime(&ttime);
+    time_t time_2 = mktime(&ttime1);
+
+    if (time_1 > time_2){
+        return 1;
+    }
+    if (time_1 < time_2){
+        return -1; 
+    }
+    return 0;
+}
+
+int MinimumTime(Mail_array mails, int time, int length){
+    int index, result;
+    if (length == 1){
+        return 0;
+    } 
+    String_ptr current = mails[0]->creationTime;
+    for (int i = 0; i < length; i++){
+        result = TimeDifference(current, mails[i]->creationTime);
+        if (result > 0){
+            current = mails[i]->creationTime;
+            index = i;
+        }
+    }
+
+    if (time == -1){
+        return index;
+    } 
     
-    for (int i = 0; i < post->mailCount; i++) {
-        if (strcmp(post->mails[i].id.data, id) == 0) {
-            removalIndex = i;
+    for (int i = 0; i < length; i++){
+        result = TimeDifference(mails[time]->creationTime, mails[i]->creationTime);
+        if ((result == 0 && i > time) || result < 0){
+            current = mails[i]->creationTime;
+            index = i;
             break;
         }
     }
 
-    if (removalIndex != -1) {
-        if (strlen(post->mails[removalIndex].deliveryTime.data) > 0) {
-            for (int i = 0; i < post->deliveredMailCount; i++) {
-                if (strcmp(post->deliveredMails[i].id.data, id) == 0) {
-                    deliveryIndex = i;
+    for (int i = 0; i < length; i++){
+        result = TimeDifference(mails[time]->creationTime, mails[i]->creationTime);
+        if (result < 0 && TimeDifference(current, mails[i]->creationTime) > 0){
+            current = mails[i]->creationTime;
+            index = i;
+        }
+    }
+    return index;
+}
+
+int CheckDelivered(String_ptr delivered){
+    int day, month, year, hours, minutes, seconds;
+    sscanf(delivered->data, "%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds);
+    struct tm ttime;
+    ttime.tm_mday = day;
+    ttime.tm_mon = month - 1;
+    ttime.tm_year = year - 1900;
+    ttime.tm_hour = hours;
+    ttime.tm_min = minutes;
+    ttime.tm_sec = seconds;
+    ttime.tm_isdst = -1;
+
+    time_t current = time(NULL);
+
+    time_t delivere = mktime(&ttime);
+
+    if (delivere < current){
+        return SUCCESS;
+    } 
+    return ERROR;
+}
+
+void PrintStatus(Mail_ptr mail){
+    printf("Receiver's adress: ");
+    PrintAdress(mail->recipient);
+    printf("Weight: %f\n", mail->weight);
+    printf("Post id: %s\n", mail->id->data);
+    printf("Creation time is: %s\n", mail->creationTime->data);
+    int result = CheckDelivered(mail->deliveryTime);
+    if (result == SUCCESS){
+        printf("The mail is delivered!\n");
+        return;
+    }
+    else{
+        printf("The mail has not been delivered yet\n");
+    } 
+}
+
+void PrintDeliveres(Post_ptr post, int length) {
+    if (post->mails == NULL || length <= 0) {
+        printf("Not delivered mails\n");
+        return;
+    }
+
+    int index = -1;
+    int count = 0;
+    for (int i = 0; i < length; i++) {
+        index = MinimumTime(post->mails, index, length);
+        if (index >= 0 && index < length && post->mails[index] != NULL && 
+            CheckDelivered((post->mails)[index]->deliveryTime) == SUCCESS) {
+            printf("%d)\n", count + 1);
+            PrintStatus(post->mails[index]);
+            count += 1;
+        }
+    }
+    if (count == 0) {
+        printf("Not delivered mails\n");
+    }
+}
+
+int FindMailById(Mail_array mails, char * id, int length){
+    if (mails == NULL){
+        return -1;
+    } 
+    for (int i = 0; i < length; i++){
+        if (strcmp(id, mails[i]->id->data) == SUCCESS){
+            return i;
+        } 
+    }
+    return -1;
+}
+
+void PrintAll(Post_ptr post, int length){
+    printf("Mails in post:\n");
+    if (length == 0){
+        printf("No mails in post\n");
+        return;
+    }
+    for (int i = 0; i < length; i++){
+        PrintStatus((post->mails)[i]);
+        printf("\n");
+    }
+}
+
+void InsertMail(int length, Post_ptr post, Mail_ptr mail){
+    int result;
+    Mail_ptr temp, temp1;
+    for (int i = 0; i < length - 1; i++){
+        result = AreStringsEqual((post -> mails)[i]->recipient->index, mail->recipient->index);
+        if (result == 0){
+            result = AreStringsEqual((post->mails)[i]->id, mail->id);
+            if (result == 1){
+                temp = (post->mails)[i];
+                (post->mails)[i] = mail;
+                for (int j = i + 1; j < length; j++){
+                    temp1 = (post->mails)[j];
+                    (post->mails)[j] = temp;
+                    temp = temp1;
+                }
+                return;
+            }
+        }
+        if (result == 1){
+            temp = (post->mails)[i];
+            (post->mails)[i] = mail;
+            for (int j = i + 1; j < length; j++){
+                temp1 = (post->mails)[j];
+                (post->mails)[j] = temp;
+                temp = temp1;
+            }
+            return;
+        }
+    }
+    (post->mails)[length - 1] = mail;
+    return;
+}
+
+int AppendMail(Mail_ptr mail, Post_ptr post, int length){
+    Mail_array temp;
+    temp = (Mail_array)realloc(post->mails, (length + 1) * sizeof(Mail_ptr));
+    if (!temp){
+        DeletePost(post, length);
+        DeleteMail(mail);
+        return ERROR_OF_MEMORY;
+    }
+    post->mails = temp;
+    InsertMail(length + 1, post, mail);
+    return SUCCESS;
+}
+
+int RemoveMail(Post_ptr * post, int index, int length){
+    Mail_ptr mail = ((*post) -> mails)[index];
+    for (int i = index; i < length - 1; i++){
+        ((*post)->mails)[i] = ((*post)->mails)[i + 1];
+    }
+
+    ((*post)->mails)[length - 1] = NULL;
+    DeleteMail(mail);
+    length--;
+    if (length == 0){
+        free((*post)->mails);
+    }
+
+    Mail_array temp = (Mail_array)realloc((*post) -> mails, length * sizeof(Mail_ptr));
+    if (!temp){
+        DeletePost(*post, length);
+        return ERROR_OF_MEMORY;
+    }
+    (*post)->mails = temp;
+    return SUCCESS;
+}
+
+void DeleteMailByIndex(Post_ptr post, int *length){
+    int result;
+    printf("\nInput the id of the mail: ");
+    char id[20];
+    result = -1;
+    while (result != SUCCESS){
+        result = scanf("%s", id);
+        if (result <= 0){
+            printf("\nWrong id, write again: ");
+        }
+        else{
+            if (strlen(id) == 14){
+                result = ValidateDigitIndex(id);
+            } 
+            if (result == SUCCESS){
+                result = FindMailById(post -> mails, id, *length);
+                if (result != -1){
                     break;
-                }
-            }
-            
-            if (deliveryIndex != -1) {
-                for (int i = deliveryIndex; i < post->deliveredMailCount - 1; i++) {
-                    post->deliveredMails[i] = post->deliveredMails[i + 1];
-                }
-                
-                post->deliveredMailCount--;
-                Mail* newDeliveredMails = (Mail*)realloc(post->deliveredMails, post->deliveredMailCount * sizeof(Mail));
-                if (newDeliveredMails == NULL) {
-                    printf("Error of memory.\n");
-                    return ERROR_OF_MEMORY;
-                }
-                post->deliveredMails = newDeliveredMails;
-            }
-        } else {
-            for (int i = 0; i < post->undeliveredMailCount; i++) {
-                if (strcmp(post->undeliveredMails[i].id.data, id) == 0) {
-                    undeliveryIndex = i;
-                    break;
-                }
-            }
-            
-            if (undeliveryIndex != -1) {
-                for (int i = undeliveryIndex; i < post->undeliveredMailCount - 1; i++) {
-                    post->undeliveredMails[i] = post->undeliveredMails[i + 1];
-                }
-                
-                post->undeliveredMailCount--;
-                Mail* newDeliveredMails = (Mail*)realloc(post->deliveredMails, post->deliveredMailCount * sizeof(Mail));
-                if (newDeliveredMails == NULL) {
-                    printf("Error of memory.\n");
-                    return ERROR_OF_MEMORY;
-                }
-                post->undeliveredMails = newDeliveredMails;
+                } 
+                printf("\nWrong id, write again: ");
             }
         }
-        
-        deleteString(&post->mails[removalIndex].recipient.city);
-        deleteString(&post->mails[removalIndex].recipient.street);
-        deleteString(&post->mails[removalIndex].recipient.building);
-        deleteString(&post->mails[removalIndex].recipient.recipientIndex);
-        deleteString(&post->mails[removalIndex].id);
-        deleteString(&post->mails[removalIndex].creationTime);
-        deleteString(&post->mails[removalIndex].deliveryTime);
-        deleteString(&post->mails[removalIndex].creationDate);
-        
-        for (int i = removalIndex; i < post->mailCount - 1; i++) {
-            post->mails[i] = post->mails[i + 1];
-        }
-
-        post->mailCount--;
-        Mail* newDeliveredMails = (Mail*)realloc(post->deliveredMails, post->deliveredMailCount * sizeof(Mail));
-        if (newDeliveredMails == NULL) {
-            printf("Error of memory.\n");
-            return ERROR_OF_MEMORY;
-        }
-        post->mails = newDeliveredMails;
     }
+    RemoveMail(&post, result, *length);
+    (*length) -= 1;
 }
 
+int AddMail(Post_ptr post, int * length){
+    int result = -1;
+    int size = 40;
+    char city[size], street[size], building[size], index[size], id[size];
+    int houseNumber, flatNumber;
 
-Mail* findMailById(Post* post, const char* id) {
-    for (int i = 0; i < post->mailCount; i++) {
-        if (strcmp(post->mails[i].id.data, id) == 0) {
-            return &(post->mails[i]);
+    printf("Enter adress of receiver.\n\n");
+    printf("Input adress in format: city street houseNumber building flatNumber index\n");
+    printf("Example: Moscow Lenina 11 - 28 121111\n");
+    printf("Enter adress: ");
+    while (result != SUCCESS){
+        result = scanf("%s %s %d %s %d %s", city, street, &houseNumber, building, &flatNumber, index);
+        if (result == 6){
+            result = Validation(city, street, houseNumber, building, flatNumber, index);
+            if (result == SUCCESS){
+                break;
+            } 
+        }
+        else if (result == 0){
+            result = -1;
+        } 
+        printf("\n\nWrong input. Try again.\n");
+        fflush(stdin);
+        printf("Enter adress: ");
+    }
+    printf("\n\n");
+
+    printf("Enter weight: ");
+    double weight;
+    result = -1;
+    while(result != SUCCESS){
+        result = scanf("%lf", &weight);
+        if (result > 0){
+            result = ValidateWeight(weight);
+            if (result == SUCCESS){
+                break;
+            } 
+        }
+        else if (result == 0){
+            result = -1;
+        } 
+        printf("\n\nWrong input. Try again.\n");
+        fflush(stdin);
+        printf("Enter weight: ");
+    }
+
+    printf("\n\nEnter id with 14 digits: ");
+    result = scanf("%s", id);
+    if (result){
+        result = ValidateDigitIndex(id);
+        if (FindMailById(post->mails, id, *length) != -1){
+            printf("\nMail with this identifier already exist.\n");
+            result = WRONG_INPUT;
+        }
+        if (result == SUCCESS && strlen(id) != 14){
+            result = WRONG_INPUT;
+        } 
+    }
+    while (result != SUCCESS){
+        printf("\nWrong input. Try again.\n");
+        fflush(stdin);
+        printf("Enter id: ");
+        result = scanf("%s", id);
+        if (result){
+            result = ValidateDigitIndex(id);
+            if (FindMailById(post->mails, id, *length) != -1){
+                printf("\nMail with this id already exist.\n\n");
+                result = WRONG_INPUT;
+            }
+            if (result == SUCCESS && strlen(id) != 14){
+                result = WRONG_INPUT;
+            } 
+        }
+        else if (result == 0){
+            result = -1;
+        } 
+    }
+
+    printf("Enter creation time (dd:MM:yyyy hh:mm:ss): ");
+    char time[size];
+    int day = 0, month = 0, year = 0, hours = 0, minutes = 0, seconds = 0;
+    result = scanf("%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds);
+    if (result){
+        result = ValidateTime(day, month, year, hours, minutes, seconds);
+    } 
+    while (result != SUCCESS){
+        printf("\n\nWrong input. Try again.\n");
+        fflush(stdin);
+        printf("Enter creation time (dd:MM:yyyy hh:mm:ss): ");
+        result = scanf("%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds);
+        if (result){
+            result = ValidateTime(day, month, year, hours, minutes, seconds);
+            if (result == SUCCESS){
+                break;
+            } 
+        }
+        else if (result == 0){
+            result = -1;
+        } 
+    }
+    sprintf(time, "%02d:%02d:%04d %02d:%02d:%02d", day, month, year, hours, minutes, seconds);
+
+    printf("Enter delivery time (dd:MM:yyyy hh:mm:ss): ");
+    char time1[size];
+    result = scanf("%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds);
+    if (result){
+        result = ValidateTime(day, month, year, hours, minutes, seconds);
+        if (result == SUCCESS){
+            sprintf(time1, "%02d:%02d:%04d %02d:%02d:%02d", day, month, year, hours, minutes, seconds);
+            result = TimeDifferenceChar(time1, time);
+            if (result > 0){
+                result = SUCCESS;
+            } 
+            else{
+                printf("Delivery time must be more than creation time.\n");
+            } 
         }
     }
+    while (result != SUCCESS){
+        printf("\n\nWrong input. Try again.\n");
+        fflush(stdin);
+        printf("Enter delivery time (dd:MM:yyyy hh:mm:ss): ");
+        result = scanf("%d:%d:%d %d:%d:%d", &day, &month, &year, &hours, &minutes, &seconds);
+        if (result == 0){
+            result = -1;
+        } 
+        else if (result == 6){
+            result = ValidateTime(day, month, year, hours, minutes, seconds);
+            if (result == SUCCESS){
+                sprintf(time1, "%02d:%02d:%04d %02d:%02d:%02d", day, month, year, hours, minutes, seconds);
+                result = TimeDifferenceChar(time1, time);
+                if (result >= 0){
+                    result = SUCCESS;
+                } 
+                else{
+                    printf("Delivery time must be more than creation time.\n");
+                } 
+            }
+        }
+    }
+    Adress_ptr recipient = CreateAdress(city, street, houseNumber, building, flatNumber, index);
+    if (recipient == NULL){
+        DeletePost(post, *length);
+        return ERROR_OF_MEMORY;
+    }
+
+    Mail_ptr mail = CreateMail(recipient, weight, id, time, time1);
+    if (mail == NULL){
+        DeleteAdress(recipient);
+        DeletePost(post, *length);
+        return ERROR_OF_MEMORY;
+    }
+
+    result = AppendMail(mail, post, *length);
+    (*length) += 1;
+    if (result == ERROR_OF_MEMORY){
+        DeleteMail(mail);
+        DeletePost(post, *length);
+        return ERROR_OF_MEMORY;
+    }
+
+    printf("\n\nThe mail was created!\n");
+    return SUCCESS;
+}
+
+int Commands(int command, Post_ptr post, int * length){
+    int result = 0;
+    switch (command){
+        case 1:
+            result = AddMail(post, length);
+            if (result == ERROR_OF_MEMORY){
+                return ERROR_OF_MEMORY;
+            } 
+            break;
+        case 2:
+            PrintAll(post, *length);
+            result = SUCCESS;
+            break;
+        case 3:
+            PrintDeliveres(post, *length);
+            result = SUCCESS;
+            break;
+        case 4:
+            DeleteMailByIndex(post, length);
+            result = SUCCESS;
+        default:
+            break;
+    }
+    return SUCCESS;
+}
+
+int main(){
+    printf("You should enter the adress\n");
+    printf("Input adress in format: city street houseNumber building flatNumber index\n");
+    printf("Example: Moscow Lenina 11 - 28 121111\n");
+    printf("Enter adress: ");
+    int size = 20;
+    char city[size], street[size], building[size], index[size];
+    int houseNumber, flatNumber;
+    int result = -1;
+
+    while (result != SUCCESS){
+        result = scanf("%s %s %d %s %d %s", city, street, &houseNumber, building, &flatNumber, index);
+        if (result == 6){
+            result = Validation(city, street, houseNumber, building, flatNumber, index);
+            if (result == SUCCESS){
+                printf("\n\n");
+                break;
+            } 
+        }
+        else if (result == 0){
+            result = -1;
+        } 
+        printf("\n\nWrong input. Try again.\n");
+        fflush(stdin);
+        printf("Enter adress: ");
+    }
+
+    Adress_ptr postAdress = CreateAdress(city, street, houseNumber, building, flatNumber, index);
+
+    int length = 0;
+    Post_ptr post = CreatePost(postAdress);
+
+    printf("\nYour adress is:");
+    PrintAdress(post->postAdress);
+
     
-    for (int i = 0; i < post->deliveredMailCount; i++) {
-        if (strcmp(post->deliveredMails[i].id.data, id) == 0) {
-            return &(post->deliveredMails[i]);
-        }
-    }
-    
-    for (int i = 0; i < post->undeliveredMailCount; i++) {
-        if (strcmp(post->undeliveredMails[i].id.data, id) == 0) {
-            return &(post->undeliveredMails[i]);
-        }
-    }
-
-    return NULL;
-}
-
-
-int compareDeliveredMail(const void* a, const void* b) {
-    const Mail* mail1 = (const Mail*)a;
-    const Mail* mail2 = (const Mail*)b;
-    
-    return strcmp(mail1->creationTime.data, mail2->creationTime.data);
-}
-
-int compareUndeliveredMail(const void* a, const void* b) {
-    const Mail* mail1 = (const Mail*)a;
-    const Mail* mail2 = (const Mail*)b;
-    
-    return strcmp(mail1->creationTime.data, mail2->creationTime.data);
-}
-
-void searchAllDelivered(Post* post) {
-    printf("Delivered mails:\n");
-    qsort(post->deliveredMails, post->deliveredMailCount, sizeof(Mail), compareDeliveredMail);
-    for (int i = 0; i < post->deliveredMailCount; i++) {
-        printMail(&post->deliveredMails[i]);
-    }
-    printf("\n");
-}
-
-void searchAllUndelivered(Post* post) {
-    printf("Undelivered mails:\n");
-    qsort(post->undeliveredMails, post->undeliveredMailCount, sizeof(Mail), compareUndeliveredMail);
-    for (int i = 0; i < post->undeliveredMailCount; i++) {
-        printMail(&post->undeliveredMails[i]);
-    }
-    printf("\n");
-}
-
-int main() {
-    Post post = createPost();
-
-    int option;
-    char id[15];
-
-    do {
-        printf("Select an option:\n");
+    int command = -1;
+    while (command != SUCCESS){
+        int command;
+        printf("\n\nSelect an option:\n");
         printf("1. Add mail\n");
-        printf("2. Remove mail\n");
-        printf("3. Search mail by id\n");
-        printf("4. Search delivered mail\n");
-        printf("5. Search undelivered mail\n");
-        printf("6. Exit\n");
-        printf("Option: ");
-        scanf("%d", &option);
-        printf("\n");
-
-        switch (option) {
-
-            case 1:
-                addMail(&post);
-                break;
-            case 2:
-                printf("Enter id of mail to remove: ");
-                scanf("%s", id);
-                removeMail(&post, id);
-                break;
-            case 3:
-                printf("Enter id of mail to search: ");
-                scanf("%s", id);
-                Mail* foundMail = findMailById(&post, id);
-                if (foundMail != NULL) {
-                    printf("Mail found:\n");
-                    printMail(foundMail);
-                } else {
-                    printf("Mail not found.\n");
-                }
-                break;
-            case 4:
-                searchAllDelivered(&post);
-                break;
-            case 5:
-                searchAllUndelivered(&post);
-                break;
-            case 6:
-                break;
-            default:
-                printf("Invalid option. Please try again.\n");
-                break;
+        printf("2. Print all created mails.\n");
+        printf("3. Search delivered mail\n");
+        printf("4. Remove mail\n");
+        printf("0. Exit\n");
+        printf("Enter command: ");
+        while (!scanf("%d", &command)){
+            fflush(stdin);
+            printf("\n\nWrong input\n");
+            printf("Enter command: ");
         }
         printf("\n");
-    } while (option != 6);
+        if (command == SUCCESS){
+            break;
+        } 
+        result = Commands(command, post, &length);
+        if (result != SUCCESS){
+            printf("Error of memory\n");
+            return result;
+        }
+    }
 
-    deletePost(&post);
+    DeletePost(post, length);
 
-    return 0;
 }
+
