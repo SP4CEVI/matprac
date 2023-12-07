@@ -644,24 +644,25 @@ int AppendMail(Mail_ptr mail, Post_ptr post, int length){
 }
 
 int RemoveMail(Post_ptr * post, int index, int length){
-    Mail_ptr mail = ((*post) -> mails)[index];
+    Mail_ptr mail = ((*post)->mails)[index];
     for (int i = index; i < length - 1; i++){
         ((*post)->mails)[i] = ((*post)->mails)[i + 1];
     }
 
     ((*post)->mails)[length - 1] = NULL;
     DeleteMail(mail);
-    length--;
+    length -= 1;
     if (length == 0){
         free((*post)->mails);
     }
-
-    Mail_array temp = (Mail_array)realloc((*post) -> mails, length * sizeof(Mail_ptr));
-    if (!temp){
-        DeletePost(*post, length);
-        return ERROR_OF_MEMORY;
+    else {
+        Mail_array temp = (Mail_array)realloc((*post)->mails, (length) * sizeof(Mail_ptr));
+        if (!temp) {
+            DeletePost(*post, length);
+            return ERROR_OF_MEMORY;
+        }
+        (*post)->mails = temp;
     }
-    (*post)->mails = temp;
     return SUCCESS;
 }
 
