@@ -87,10 +87,10 @@ enum ERRORS flag_p(unsigned int value){
 
     for (int i = 3; i < sqrtl(value); i += 2){
         if (value % i == 0){
-            return OK;
+            return BAD;
         }
     }
-    return BAD;
+    return OK;
 }
 
 
