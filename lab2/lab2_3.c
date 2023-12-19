@@ -15,7 +15,7 @@ enum Status{
     SUCCESS = 0,
     ERROR_OF_MEMORY = -1,
     ERROR_OF_FILE = -2,
-	ERROR = -3
+    ERROR = -3
 };
 
 int FindSubstring(Data** info, int** res, const char* substring, int count, ...){
