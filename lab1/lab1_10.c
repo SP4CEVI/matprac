@@ -74,6 +74,7 @@ int main() {
         
         if (absValue > abs(maxValue)) {
             maxValue = value;
+            strcpy(maxNumber, number);
         }
     }
 
